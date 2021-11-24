@@ -3,12 +3,17 @@ const db = require('./db')
 const app = express()
 const port = 8080
 const bodyParser = require("body-parser");
- 
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
- 
+
+// FRONT
+app.get('/', async (req, res) => {
+    res.sendFile('index.html', { root: '.' })
+});
+
 // GET
-app.get('/tasks', async (req, res) => {
+app.get('/api/tasks', async (req, res) => {
     try {
         const result = await db.pool.query("select * from tasks");
         res.send(result);
@@ -16,9 +21,9 @@ app.get('/tasks', async (req, res) => {
         throw err;
     }
 });
- 
+
 // POST
-app.post('/tasks', async (req, res) => {
+app.post('/api/tasks', async (req, res) => {
     let task = req.body;
     try {
         const result = await db.pool.query("insert into tasks (description) values (?)", [task.description]);
@@ -27,7 +32,7 @@ app.post('/tasks', async (req, res) => {
         throw err;
     }
 });
- 
+
 app.put('/tasks', async (req, res) => {
     let task = req.body;
     try {
@@ -35,9 +40,9 @@ app.put('/tasks', async (req, res) => {
         res.send(result);
     } catch (err) {
         throw err;
-    } 
+    }
 });
- 
+
 app.delete('/tasks', async (req, res) => {
     let id = req.query.id;
     try {
@@ -45,7 +50,12 @@ app.delete('/tasks', async (req, res) => {
         res.send(result);
     } catch (err) {
         throw err;
-    } 
+    }
 });
- 
+
+// 404
+app.get('/*', async (req, res) => {
+    res.sendFile('404.html', { root: '.' })
+});
+
 app.listen(port, () => console.log(`Listening on port ${port}`));
