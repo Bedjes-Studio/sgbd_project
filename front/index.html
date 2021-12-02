@@ -30,20 +30,16 @@
 		function insert(text) {
 			$("#apiResult").empty();
 			$("#apiResult").append("<p>" + text + "</p>")
-			console.log(text);
+			console.log(text[0]);
 		}
 
 
 		function sendRequest(url, method, callback) {
-			/*$.getJSON('http://query.yahooapis.com/v1/public/yql?q=select%20%2a%20from%20yahoo.finance.quotes%20WHERE%20symbol%3D%27WRC%27&format=json&diagnostics=true&env=store://datatables.org/alltableswithkeys&callback', function (data) {
-				console.log(data)
-			});*/
-
+	
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.onreadystatechange = function () {
 				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-					console.log(xmlHttp)
-					callback(xmlHttp.response);
+					callback(JSON.parse(xmlHttp.response));
 				}
 			}
 			xmlHttp.open(method, url, true);

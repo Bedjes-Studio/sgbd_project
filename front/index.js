@@ -34,29 +34,12 @@ app.get('/api/adherent', async (req, res) => {
     }
 });
 
-// Defining get request at '/multiple' route
-app.get('/multiple', function(req, res) {
-    res.setHeader('Content-Type', 'application/json');
-    res.json({
-      number: 1,
-      name: 'John',
-      gender: 'male'
-    });
-  });
-
 app.get('/api/commune', async (req, res) => {
     try {
         const result = await db.pool.query("select * from commune");
         console.log(result[0])
         res.setHeader('Content-Type', 'application/json');
-        //res.send(JSON.stringify(result));
-        res.json({
-            number: 1,
-            name: 'John',
-            gender: 'male'
-          });
-        //res.json(result);
-
+        res.json(result);
     } catch (err) {
         throw err;
     }
