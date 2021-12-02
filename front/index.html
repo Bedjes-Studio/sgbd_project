@@ -4,14 +4,36 @@
 <head>
   <meta charset="UTF-8">
   <title>SGBD</title>
+  <!-- Jquery-->
+  <script language="javascript" type="text/javascript"
+    src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 
 <body>
-  <div>bonjour
+  <h1>bonjour</h1>
 
-  </div>
+  <button onclick="getApi()">api</button>
+  <div id="apiResult"></div>
 
   <script>
+
+    function getApi() {
+      httpGetAsync("/api/tasks", insert);
+    }
+
+    function insert(text) {
+      $("#apiResult").append("<p>" + text + "</p>")
+    }
+
+    function httpGetAsync(url, callback) {
+      var xmlHttp = new XMLHttpRequest();
+      xmlHttp.onreadystatechange = function () {
+        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
+          callback(xmlHttp.responseText);
+      }
+      xmlHttp.open("GET", url, true); // true for asynchronous 
+      xmlHttp.send(null);
+    }
 
   </script>
 </body>
