@@ -74,6 +74,8 @@ BEGIN
     IF NB_VELO > 0 THEN
         UPDATE STATION SET STATION.NB_BORNES_DISPO=NB_VELO-1
         WHERE ID_STATION=NEW.ID_STATION;
+    ELSE 
+        signal sqlstate '45000' set message_text = 'Plus de place dans la station déso';
     END IF;
 
 END #
