@@ -2,40 +2,55 @@
 <html lang="fr">
 
 <head>
-  <meta charset="UTF-8">
-  <title>SGBD</title>
-  <!-- Jquery-->
-  <script language="javascript" type="text/javascript"
-    src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<meta charset="UTF-8">
+	<title>SGBD</title>
+	<!-- Jquery-->
+	<script language="javascript" type="text/javascript"
+		src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 </head>
 
 <body>
-  <h1>bonjour</h1>
+	<h1>bonjour</h1>
 
-  <button onclick="getApi()">api</button>
-  <div id="apiResult"></div>
+	<button onclick="getApi('adherent', 'GET')">Adherent</button>
+	<button onclick="getApi('commune', 'GET')">Communes</button>
+	<button onclick="getApi('emprunt', 'GET')">Emprunt</button>
+	<button onclick="getApi('station', 'GET')">Station</button>
+	<button onclick="getApi('velo', 'GET')">Velo</button>
 
-  <script>
 
-    function getApi() {
-      httpGetAsync("/api/tasks", insert);
-    }
+	<div id="apiResult"></div>
 
-    function insert(text) {
-      $("#apiResult").append("<p>" + text + "</p>")
-    }
+	<script>
 
-    function httpGetAsync(url, callback) {
-      var xmlHttp = new XMLHttpRequest();
-      xmlHttp.onreadystatechange = function () {
-        if (xmlHttp.readyState == 4 && xmlHttp.status == 200)
-          callback(xmlHttp.responseText);
-      }
-      xmlHttp.open("GET", url, true); // true for asynchronous 
-      xmlHttp.send(null);
-    }
+		function getApi(api, method) {
+			sendRequest("/api/" + api, method, insert);
+		}
 
-  </script>
+		function insert(text) {
+			$("#apiResult").empty();
+			$("#apiResult").append("<p>" + text + "</p>")
+			console.log(text);
+		}
+
+
+		function sendRequest(url, method, callback) {
+			/*$.getJSON('http://query.yahooapis.com/v1/public/yql?q=select%20%2a%20from%20yahoo.finance.quotes%20WHERE%20symbol%3D%27WRC%27&format=json&diagnostics=true&env=store://datatables.org/alltableswithkeys&callback', function (data) {
+				console.log(data)
+			});*/
+
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+					console.log(xmlHttp)
+					callback(xmlHttp.response);
+				}
+			}
+			xmlHttp.open(method, url, true);
+			xmlHttp.send();
+		}
+
+	</script>
 </body>
 
 </html>

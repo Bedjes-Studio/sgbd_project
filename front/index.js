@@ -12,17 +12,84 @@ app.get('/', async (req, res) => {
     res.sendFile('index.html', { root: '.' })
 });
 
-// GET
-app.get('/api/tasks', async (req, res) => {
+// API LIST
+app.get('/api', async (req, res) => {
     try {
-        const result = await db.pool.query("select * from tasks");
+        const result = await db.pool.query("select * from commune");
         res.send(result);
     } catch (err) {
         throw err;
     }
 });
 
-// POST
+// API GET
+
+// Tables
+app.get('/api/adherent', async (req, res) => {
+    try {
+        const result = await db.pool.query("select * from adherent");
+        res.send(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+// Defining get request at '/multiple' route
+app.get('/multiple', function(req, res) {
+    res.setHeader('Content-Type', 'application/json');
+    res.json({
+      number: 1,
+      name: 'John',
+      gender: 'male'
+    });
+  });
+
+app.get('/api/commune', async (req, res) => {
+    try {
+        const result = await db.pool.query("select * from commune");
+        console.log(result[0])
+        res.setHeader('Content-Type', 'application/json');
+        //res.send(JSON.stringify(result));
+        res.json({
+            number: 1,
+            name: 'John',
+            gender: 'male'
+          });
+        //res.json(result);
+
+    } catch (err) {
+        throw err;
+    }
+});
+
+app.get('/api/emprunt', async (req, res) => {
+    try {
+        const result = await db.pool.query("select * from emprunt");
+        res.send(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+app.get('/api/station', async (req, res) => {
+    try {
+        const result = await db.pool.query("select * from station");
+        res.send(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+app.get('/api/velo', async (req, res) => {
+    try {
+        const result = await db.pool.query("select * from velo");
+        res.send(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+// API POST
 app.post('/api/tasks', async (req, res) => {
     let task = req.body;
     try {
