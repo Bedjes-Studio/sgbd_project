@@ -22,22 +22,13 @@ app.get('/api', async (req, res) => {
     }
 });
 
-// API GET
+// ##### API GET #####
 
 // Tables
-app.get('/api/adherent', async (req, res) => {
-    try {
-        const result = await db.pool.query("select * from adherent");
-        res.send(result);
-    } catch (err) {
-        throw err;
-    }
-});
 
-app.get('/api/commune', async (req, res) => {
+app.get('/api/table/:table', async (req, res) => {
     try {
-        const result = await db.pool.query("select * from commune");
-        console.log(result[0])
+        const result = await db.pool.query("select * from " + req.params.table);
         res.setHeader('Content-Type', 'application/json');
         res.json(result);
     } catch (err) {
@@ -45,34 +36,8 @@ app.get('/api/commune', async (req, res) => {
     }
 });
 
-app.get('/api/emprunt', async (req, res) => {
-    try {
-        const result = await db.pool.query("select * from emprunt");
-        res.send(result);
-    } catch (err) {
-        throw err;
-    }
-});
+// ##### API POST #####
 
-app.get('/api/station', async (req, res) => {
-    try {
-        const result = await db.pool.query("select * from station");
-        res.send(result);
-    } catch (err) {
-        throw err;
-    }
-});
-
-app.get('/api/velo', async (req, res) => {
-    try {
-        const result = await db.pool.query("select * from velo");
-        res.send(result);
-    } catch (err) {
-        throw err;
-    }
-});
-
-// API POST
 app.post('/api/tasks', async (req, res) => {
     let task = req.body;
     try {
