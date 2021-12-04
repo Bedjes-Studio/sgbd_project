@@ -16,16 +16,16 @@
 <body>
 	<div>
 		<h1>Post</h1>
-		
+		<button onclick="postApi('commune')">Ajouter une commune </button>
 	</div>
 
 	<div>
 		<h1>Getter</h1>
-		<button onclick="getApi('table/adherent', 'GET')">Adherent</button>
-		<button onclick="getApi('table/commune', 'GET')">Communes</button>
-		<button onclick="getApi('table/emprunt', 'GET')">Emprunt</button>
-		<button onclick="getApi('table/station', 'GET')">Station</button>
-		<button onclick="getApi('table/velo', 'GET')">Velo</button>
+		<button onclick="getApi('adherent')">Adherent</button>
+		<button onclick="getApi('commune')">Communes</button>
+		<button onclick="getApi('emprunt')">Emprunt</button>
+		<button onclick="getApi('station')">Station</button>
+		<button onclick="getApi('velo')">Velo</button>
 	</div>
 
 	<table class="table table-striped">
@@ -40,24 +40,36 @@
 
 	<script>
 
-		function getApi(api, method) {
-			sendRequest("/api/" + api, method, displayApi);
+		// ##### POST #####
+
+		function postApi(api) {
+			//sendRequest("/api/" + api, "POST", displayApi);
+			let data = JSON.stringify({
+				"NOM_COMMUNE": "France",
+				"ID_COMMUNE" : 5
+			});
+
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+					console.log(xmlHttp.response);
+				}
+			}
+			xmlHttp.open("POST", "/api/" + api, true);
+			xmlHttp.setRequestHeader('Content-Type', 'application/json');
+
+			xmlHttp.send(data);
+		}
+
+		// ##### GET #####
+
+		function getApi(api) {
+			sendRequest("/api/" + api, "GET", displayApi);
 		}
 
 		function displayApi(result) {
-
 			insertHeader(result);
-
 			insertBody(result);
-
-			$("#apiResult").append("<p>" + text + "</p>")
-
-
-			$("#apiResult").empty();
-			$("#apiResult").append("<p>" + text + "</p>")
-			console.log(text[0]);
-			console.log(text[0]);
-
 		}
 
 		function insertHeader(result) {

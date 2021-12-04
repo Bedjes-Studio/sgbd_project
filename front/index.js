@@ -26,7 +26,7 @@ app.get('/api', async (req, res) => {
 
 // Tables
 
-app.get('/api/table/:table', async (req, res) => {
+app.get('/api/:table', async (req, res) => {
     try {
         const result = await db.pool.query("select * from " + req.params.table);
         res.setHeader('Content-Type', 'application/json');
@@ -37,38 +37,45 @@ app.get('/api/table/:table', async (req, res) => {
 });
 
 // ##### API POST #####
+function parseData(data) {
+    let values = "(";
 
-app.post('/api/tasks', async (req, res) => {
-    let task = req.body;
+    for (let key in data) {
+        values += "\"" + data[key] + "\",";
+    }
+    values = values.slice(0, -1); // remove last comma
+
+    values += ")";
+    return values;
+}
+
+app.post('/api/:table/', async (req, res) => {
     try {
-        const result = await db.pool.query("insert into tasks (description) values (?)", [task.description]);
-        res.send(result);
+        let values = parseData(req.body);
+        console.log(values);
+        await db.pool.query("insert into " + req.params.table + " values " + values);
+        res.send("Table updated.");
     } catch (err) {
+        res.send("Table not updated : \n" + err);
         throw err;
     }
 });
 
-app.put('/tasks', async (req, res) => {
-    let task = req.body;
-    try {
-        const result = await db.pool.query("update tasks set description = ?, completed = ? where id = ?", [task.description, task.completed, task.id]);
-        res.send(result);
-    } catch (err) {
-        throw err;
-    }
+// ##### API PUT (update) #####
+
+// TODO : implements this api
+app.put('/', async (req, res) => {
+    
 });
 
-app.delete('/tasks', async (req, res) => {
-    let id = req.query.id;
-    try {
-        const result = await db.pool.query("delete from tasks where id = ?", [id]);
-        res.send(result);
-    } catch (err) {
-        throw err;
-    }
+// ##### API DELETE #####
+
+// TODO : implements this api
+app.delete('/', async (req, res) => {
+    
 });
 
-// 404
+// 404 
 app.get('/*', async (req, res) => {
     res.sendFile('404.html', { root: '.' })
 });
