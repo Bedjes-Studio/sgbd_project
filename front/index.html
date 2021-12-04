@@ -7,35 +7,84 @@
 	<!-- Jquery-->
 	<script language="javascript" type="text/javascript"
 		src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<!-- Bootstrap -->
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
 </head>
 
 <body>
-	<h1>bonjour</h1>
+	<div>
+		<h1>Post</h1>
+		
+	</div>
 
-	<button onclick="getApi('adherent', 'GET')">Adherent</button>
-	<button onclick="getApi('commune', 'GET')">Communes</button>
-	<button onclick="getApi('emprunt', 'GET')">Emprunt</button>
-	<button onclick="getApi('station', 'GET')">Station</button>
-	<button onclick="getApi('velo', 'GET')">Velo</button>
+	<div>
+		<h1>Getter</h1>
+		<button onclick="getApi('adherent', 'GET')">Adherent</button>
+		<button onclick="getApi('commune', 'GET')">Communes</button>
+		<button onclick="getApi('emprunt', 'GET')">Emprunt</button>
+		<button onclick="getApi('station', 'GET')">Station</button>
+		<button onclick="getApi('velo', 'GET')">Velo</button>
+	</div>
 
-
-	<div id="apiResult"></div>
+	<table class="table table-striped">
+		<thead>
+			<tr id="apiResultHead">
+			</tr>
+		</thead>
+		<tbody id="apiResultBody">
+		</tbody>
+	</table>
+	</div>
 
 	<script>
 
 		function getApi(api, method) {
-			sendRequest("/api/" + api, method, insert);
+			sendRequest("/api/" + api, method, displayApi);
 		}
 
-		function insert(text) {
+		function displayApi(result) {
+
+			insertHeader(result);
+
+			insertBody(result);
+
+			$("#apiResult").append("<p>" + text + "</p>")
+
+
 			$("#apiResult").empty();
 			$("#apiResult").append("<p>" + text + "</p>")
 			console.log(text[0]);
+			console.log(text[0]);
+
 		}
 
+		function insertHeader(result) {
+			let keys = Object.keys(result[0]);
+
+			$("#apiResultHead").empty();
+
+			for (let key of keys) {
+				$("#apiResultHead").append('<th scope="col">' + key + ' </th>');
+			}
+		}
+
+		function insertBody(result) {
+
+			$("#apiResultBody").empty();
+
+			for (let row of result) {
+				let html = "<tr>";
+				for (let key in row) {
+					html += "<td>" + row[key] + "</td>";
+				}
+				html += "</td>";
+				$("#apiResultBody").append(html);
+			}
+		}
 
 		function sendRequest(url, method, callback) {
-	
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.onreadystatechange = function () {
 				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
