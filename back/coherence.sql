@@ -34,25 +34,27 @@ BEGIN
 END #
 
 -- Rendu d'un velo
-CREATE TRIGGER rendu_velo
-BEFORE UPDATE ON EMPRUNT FOR EACH ROW
-BEGIN
-    DECLARE DATE_EMPRUNT DATE;
-    DECLARE KILOMETRAGE_DEP INTEGER;
-    DECLARE STATION_DEPART INTEGER;
+-- CREATE TRIGGER rendu_velo
+-- BEFORE UPDATE ON EMPRUNT FOR EACH ROW
+-- BEGIN
+--     DECLARE DATE_EMPRUNT DATE;
+--     DECLARE KILOMETRAGE_DEP INTEGER;
+--     DECLARE STATION_DEPART INTEGER;
 
-    SELECT KILOMETRAGE, ID_STATION INTO KILOMETRAGE_DEP, STATION_DEPART
-    FROM VELO WHERE ID_VELO=NEW.ID_VELO;
+--     SELECT KILOMETRAGE, ID_STATION INTO KILOMETRAGE_DEP, STATION_DEPART
+--     FROM VELO WHERE ID_VELO=NEW.ID_VELO;
 
-    SET NEW.KILOMETRAGE_DEPART = KILOMETRAGE_DEP; -- WHERE ID_EMPRUNT=NEW.ID_EMPRUNT;
-    -- IF KILOMETRAGE_DEP != NEW.KILOMETRAGE_DEPART THEN
-    --     UPDATE EMPRUNT SET EMPRUNT.KILOMETRAGE_DEPART = KILOMETRAGE_DEP
-    --     WHERE ID_EMPRUNT=NEW.ID_EMPRUNT;
-    -- END IF;
+--     SET NEW.KILOMETRAGE_DEPART = KILOMETRAGE_DEP; -- WHERE ID_EMPRUNT=NEW.ID_EMPRUNT;
+--     -- IF KILOMETRAGE_DEP != NEW.KILOMETRAGE_DEPART THEN
+--     --     UPDATE EMPRUNT SET EMPRUNT.KILOMETRAGE_DEPART = KILOMETRAGE_DEP
+--     --     WHERE ID_EMPRUNT=NEW.ID_EMPRUNT;
+--     -- END IF;
+--     SELECT 
+--     UPDATE VELO SET KILOMETRAGE 
 
-    UPDATE STATION
-    SET STATION.NB_BORNES_DISPO=NB_BORNES_DISPO-1 WHERE STATION.ID_STATION=STATION_DEPART;
-END #
+--     UPDATE STATION
+--     SET STATION.NB_BORNES_DISPO=NB_BORNES_DISPO-1 WHERE STATION.ID_STATION=STATION_DEPART;
+-- END #
 
 
 -- Not enough bornes
@@ -154,9 +156,9 @@ BEGIN
 -- count nb_emprunt en cours avec ce vélo
     SELECT COUNT(*) INTO nb_emprunt_en_cours FROM EMPRUNT WHERE ID_VELO = id_velo_emprunt AND HEURE_RENDU IS NULL;
 
-IF nb_emprunt_en_cours > 0 THEN
-    signal sqlstate '45000' set message_text = 'Un emprunt est déja en cours avec ce vélo, tu forces';
-END IF;
+    IF nb_emprunt_en_cours > 0 THEN
+        signal sqlstate '45000' set message_text = 'Un emprunt est déja en cours avec ce vélo, tu forces';
+    END IF;
 
 -- select id_station
     SELECT ID_STATION INTO id_station_emprunt 
@@ -186,23 +188,36 @@ CREATE PROCEDURE rendu_emprunt
     IN id_velo_emprunt INT)
 BEGIN
     DECLARE heure_rendu DATETIME DEFAULT NOW();
-    DECLARE kilometrage_rendu INT DEFAULT 0;
+    DECLARE kilometrage_depart INT;
+    DECLARE id_station_depart INT;
     DECLARE distance_station INT DEFAULT 0;
     DECLARE nb_bornes_disponibles INT DEFAULT 0;
     DECLARE nb_bornes_total INT DEFAULT 0;
     DECLARE id_emprunt_a_rendre INT DEFAULT 0;
+    DECLARE date_dernier_emprunt DATETIME;
 
 -- RECUP ID_EMPRUNT
     SELECT ID_EMPRUNT INTO id_emprunt_a_rendre FROM EMPRUNT 
     WHERE ID_VELO=id_velo_emprunt AND HEURE_RENDU IS NULL;
 
 -- kilometrage depart
-    SELECT KILOMETRAGE_DEPART INTO kilometrage_rendu FROM EMPRUNT 
+    SELECT KILOMETRAGE_DEPART INTO kilometrage_depart FROM EMPRUNT 
     WHERE ID_EMPRUNT=id_emprunt_a_rendre;
+
+-- Select plus grande date de création d'un emprunt
+    SELECT MAX(CAST(HEURE_DEPART AS DATETIME)) INTO date_dernier_emprunt FROM EMPRUNT
+    WHERE ID_VELO=id_velo_emprunt;
+
+-- id_station_depart
+    SELECT ID_STATION INTO id_station_depart FROM EMPRUNT 
+    WHERE HEURE_DEPART IN (
+        SELECT MAX(CAST(HEURE_DEPART AS DATETIME)) FROM EMPRUNT
+        WHERE ID_VELO=id_velo_emprunt
+    );
 
 -- distance entre les stations
     SELECT DISTANCE INTO distance_station FROM DISTANCE
-    WHERE ID_STATION1=id_station_rendu;
+    WHERE ID_STATION1=id_station_rendu AND ID_STATION2=id_station_depart;
 
 -- check si assez de bornes dispo dans la station
     SELECT NB_BORNES_DISPO INTO nb_bornes_disponibles FROM STATION
@@ -213,10 +228,13 @@ BEGIN
         WHERE ID_STATION=id_station_rendu;
 
         UPDATE EMPRUNT SET HEURE_RENDU=heure_rendu
-        WHERE ID_VELO=id_velo_emprunt;
+        WHERE HEURE_DEPART IN (
+            SELECT MAX(CAST(HEURE_DEPART AS DATETIME)) FROM EMPRUNT
+            WHERE ID_VELO=id_velo_emprunt
+        );
 
         -- update kilometrage et station velo
-        UPDATE VELO SET KILOMETRAGE=kilometrage_rendu+distance_station
+        UPDATE VELO SET KILOMETRAGE=kilometrage_depart+distance_station
         WHERE ID_VELO=id_velo_emprunt;
 
         UPDATE VELO SET ID_STATION=id_station_rendu
@@ -233,7 +251,6 @@ BEGIN
     END IF;
 
 END #
-
 
 
  -- Insertion d'une distance pour rajouter la distance inverse
