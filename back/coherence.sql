@@ -78,10 +78,6 @@ BEGIN
     SET NEW.NB_BORNES_DISPO = NEW.NB_BORNES;
 END #
 
-
- -- 
-
-
  -- INSERTION VELO
 
 CREATE TRIGGER plus_de_place BEFORE
@@ -238,5 +234,27 @@ BEGIN
 
 END #
 
+
+
+ -- Insertion d'une distance pour rajouter la distance inverse
+DROP PROCEDURE IF EXISTS distance_station;
+CREATE PROCEDURE distance_station
+    (IN id_station1 INT, 
+    IN id_station2 INT,
+    IN distance INT)
+BEGIN
+    IF id_station1 = id_station2 AND distance != 0 THEN
+        signal sqlstate '45000' set message_text = 'La distance entre une station et elle même doit être 0';
+    END IF;
+    IF id_station1 != id_station2 THEN
+        INSERT INTO DISTANCE 
+        VALUES (id_station1, id_station2, distance);
+        INSERT INTO DISTANCE 
+        VALUES (id_station2, id_station1, distance);
+    ELSE
+        INSERT INTO DISTANCE 
+        VALUES (id_station1, id_station2, distance);
+    END IF;
+END #
 
 DELIMITER ;
