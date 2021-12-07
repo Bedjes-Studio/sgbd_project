@@ -140,6 +140,44 @@ END #
 --     END IF;
 -- END #
 
+-- Création d'un emprunt avec une date de début
+DROP PROCEDURE IF EXISTS creation_emprunt_timer;
+
+CREATE PROCEDURE creation_emprunt_timer
+    (IN id_adherent_emprunt INT,
+    IN id_velo_emprunt INT,
+    IN date_debut_emprunt DATETIME)
+BEGIN
+    DECLARE kilometrage_depart_emprunt INT DEFAULT 0;
+    DECLARE id_station_emprunt INT;
+    DECLARE nb_emprunt_en_cours INT;
+
+-- count nb_emprunt en cours avec ce vélo
+    SELECT COUNT(*) INTO @nb_emprunt_en_cours FROM EMPRUNT WHERE ID_VELO = id_velo_emprunt AND HEURE_RENDU IS NULL;
+
+    IF @nb_emprunt_en_cours = 0 THEN
+        -- select id_station
+        SELECT ID_STATION INTO @id_station_emprunt 
+        FROM VELO WHERE ID_VELO=id_velo_emprunt;
+
+        -- update le nombre de bornes dispo après emprunt
+        UPDATE STATION SET NB_BORNES_DISPO=NB_BORNES_DISPO+1 
+        WHERE ID_STATION=@id_station_emprunt;
+
+        -- Mettre id_station à null dans le velo
+        UPDATE VELO SET ID_STATION=NULL 
+        WHERE ID_VELO=id_velo_emprunt;
+
+        SELECT KILOMETRAGE INTO @kilometrage_depart_emprunt
+        FROM VELO WHERE ID_VELO=id_velo_emprunt;
+
+        INSERT INTO `EMPRUNT` (`KILOMETRAGE_DEPART`, `HEURE_DEPART`, `ID_ADHERENT`, `ID_STATION`, `ID_VELO`)
+        VALUES (@kilometrage_depart_emprunt, date_debut_emprunt, id_adherent_emprunt, @id_station_emprunt, id_velo_emprunt);
+    -- ELSE 
+    --     signal sqlstate '45000' set message_text = 'Un emprunt est déja en cours avec ce vélo, tu forces';
+    END IF;
+    
+END #
 
 -- CREATION D'UN EMPRUNT
 DROP PROCEDURE IF EXISTS creation_emprunt;
@@ -180,8 +218,6 @@ BEGIN
     
 END #
 
--- UPDATE VELO SET KILOMETRAGE=420 WHERE ID_VELO<3;
-
 -- rendu d'un velo après emprunt
 DROP PROCEDURE IF EXISTS rendu_emprunt;
 -- DELIMITER #
@@ -195,9 +231,6 @@ BEGIN
     DECLARE id_emprunt_a_rendre INTEGER;
 
     SET @heure_rendu_velo=NOW();
--- -- RECUP ID_EMPRUNT
---     SELECT ID_EMPRUNT INTO @id_emprunt_a_rendre FROM EMPRUNT 
---     WHERE ID_VELO=id_velo_emprunt AND HEURE_RENDU IS NULL;
 
     -- check si assez de bornes dispo dans la station
     -- fAIT MARCHER EN DESSOUS
@@ -225,6 +258,44 @@ BEGIN
     WHERE ID_VELO=id_velo_emprunt;
 END #
 
+-- rendu d'un velo après emprunt à une date donnée
+DROP PROCEDURE IF EXISTS rendu_emprunt_timer;
+-- DELIMITER #
+CREATE PROCEDURE rendu_emprunt_timer
+    (IN id_station_rendu INT,
+    IN id_velo_emprunt INT,
+    IN heure_rendu_velo DATETIME)
+BEGIN
+    -- DECLARE kilometrage_depart INTEGER;
+    DECLARE nb_bornes_disponibles INTEGER;
+    DECLARE id_emprunt_a_rendre INTEGER;
+
+
+    -- check si assez de bornes dispo dans la station
+    -- fAIT MARCHER EN DESSOUS
+    SELECT NB_BORNES_DISPO INTO @nb_bornes_disponibles FROM STATION
+    WHERE ID_STATION=id_station_rendu;
+    
+    -- Diminution du nombre de bornes disponnibles
+    -- CA MARCHE !!
+    UPDATE STATION SET NB_BORNES_DISPO=@nb_bornes_disponibles-1
+    WHERE ID_STATION=id_station_rendu;
+
+    -- Update emprunt.heure_rendu 
+    UPDATE EMPRUNT SET HEURE_RENDU=heure_rendu_velo
+    WHERE ID_VELO=id_velo_emprunt AND HEURE_RENDU IS NULL;
+
+    -- update kilometrage et station velo
+    UPDATE VELO SET KILOMETRAGE = (
+        SELECT KILOMETRAGE_DEPART + DISTANCE
+        FROM EMPRUNT JOIN DISTANCE ON ID_STATION=ID_STATION1 
+        WHERE ID_STATION2=id_station_rendu
+    ) WHERE ID_VELO=id_velo_emprunt;
+
+    -- CA MARCHE
+    UPDATE VELO SET ID_STATION=id_station_rendu
+    WHERE ID_VELO=id_velo_emprunt;
+END #
 
  -- Insertion d'une distance pour rajouter la distance inverse
 DROP PROCEDURE IF EXISTS distance_station;
@@ -247,4 +318,59 @@ BEGIN
     END IF;
 END #
 
+DELIMITER #
+DROP PROCEDURE IF EXISTS generation_emprunts_aleatoires;
+
+CREATE PROCEDURE generation_emprunts_aleatoires ()
+
+BEGIN
+    DECLARE date_courante DATETIME;
+    DECLARE i INT default 0;
+    DECLARE id_velo_current INT default 0;
+    DECLARE id_station_current INT default 0;
+    DECLARE id_adherent_current INT default 0;
+    DECLARE nb_emprunt_par_jour INT;
+    DECLARE time_courant TIME;
+
+    SET date_courante = CURDATE() - INTERVAL 7 DAY;
+    WHILE date_courante <= CURDATE() DO
+        SET i = 0;
+        SET id_velo_current = 1;
+        SET id_station_current = 1;
+        SET id_adherent_current = 1;
+        SET nb_emprunt_par_jour = ROUND (RAND() * 50);
+        set time_courant = '00:00:00';
+
+        WHILE i <= nb_emprunt_par_jour or time_courant <= '23:59:59' DO
+            -- IF ((SELECT EMPRUNTE FROM VELOS WHERE ID_VELO = id_velo_current) = FALSE 
+            --     and 
+            --     (SELECT CHARGE FROM VELOS WHERE ID_VELO = id_velo_current) > 0) 
+            -- THEN
+            
+            -- WHILE ((SELECT EMPRUNTE FROM VELOS WHERE ID_VELO = id_velo_current) = TRUE) DO
+            --     SET id_velo_current = ROUND( RAND() * ((SELECT COUNT(*) FROM VELOS) - 1) + 1 );
+            -- END WHILE;
+            -- WHILE ((SELECT COUNT(*) FROM EMPRUNT WHERE ID_ADHERENT=id_adherent_current AND HEURE_RENDU IS NULL) != 0) DO
+                SET id_velo_current = ROUND( RAND() * ((SELECT COUNT(*) FROM VELO) - 1) + 1 );
+            -- END WHILE;
+            
+            SET id_adherent_current = ROUND( RAND() * ((SELECT COUNT(*) FROM ADHERENT) - 1) + 1 );
+            
+            CALL creation_emprunt_timer(id_adherent_current, id_velo_current, date_courante + time_courant);
+
+            SET id_station_current = ROUND( RAND() * ((SELECT COUNT(*) FROM STATION) - 1) + 1 );
+            WHILE ((SELECT NB_BORNES_DISPO FROM STATION WHERE ID_STATION = id_station_current) = 0) DO
+                SET id_station_current = ROUND( RAND() * ((SELECT COUNT(*) FROM STATION) - 1) + 1 );
+            END WHILE;
+            -- WHILE ((SELECT COUNT(*) FROM EMPRUNT WHERE ID_VELO=id_velo_current AND HEURE_RENDU IS NULL) != 1)
+            -- CALL rendu_emprunt_timer(id_station_current, id_velo_current, date_courante + SEC_TO_TIME(TIME_TO_SEC(time_courant) + (300 + ROUND(RAND() * 1800))));
+    
+            SET i = i + 1;
+            SET time_courant = SEC_TO_TIME(TIME_TO_SEC(time_courant) + (600 + ROUND(RAND() * 2000)));
+            -- END IF;
+        END WHILE; -- Emprunt par jour
+    SET date_courante = date_courante + INTERVAL 1 DAY;
+    END WHILE; -- Date 
+
+END #
 DELIMITER ;
