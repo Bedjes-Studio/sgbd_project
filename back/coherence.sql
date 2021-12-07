@@ -189,14 +189,15 @@ CREATE PROCEDURE rendu_emprunt
     (IN id_station_rendu INT,
     IN id_velo_emprunt INT)
 BEGIN
-    DECLARE heure_rendu_velo DATETIME DEFAULT NOW();
+    DECLARE heure_rendu_velo DATETIME;
     -- DECLARE kilometrage_depart INTEGER;
     DECLARE nb_bornes_disponibles INTEGER;
     DECLARE id_emprunt_a_rendre INTEGER;
 
--- RECUP ID_EMPRUNT
-    SELECT ID_EMPRUNT INTO @id_emprunt_a_rendre FROM EMPRUNT 
-    WHERE ID_VELO=@id_velo_emprunt AND HEURE_RENDU IS NULL;
+    SET @heure_rendu_velo=NOW();
+-- -- RECUP ID_EMPRUNT
+--     SELECT ID_EMPRUNT INTO @id_emprunt_a_rendre FROM EMPRUNT 
+--     WHERE ID_VELO=id_velo_emprunt AND HEURE_RENDU IS NULL;
 
     -- check si assez de bornes dispo dans la station
     -- fAIT MARCHER EN DESSOUS
@@ -209,16 +210,15 @@ BEGIN
     WHERE ID_STATION=id_station_rendu;
 
     -- Update emprunt.heure_rendu 
-    UPDATE EMPRUNT SET HEURE_RENDU=@heure_rendu_velo
-    WHERE ID_VELO=@id_velo_emprunt AND HEURE_RENDU IS NULL;
+    UPDATE EMPRUNT SET HEURE_RENDU=NOW()
+    WHERE ID_VELO=id_velo_emprunt AND HEURE_RENDU IS NULL;
 
     -- update kilometrage et station velo
-    -- MARCHE PRESQUE, JUSTE L'ADDITION MARCHE AP
     UPDATE VELO SET KILOMETRAGE = (
         SELECT KILOMETRAGE_DEPART + DISTANCE
         FROM EMPRUNT JOIN DISTANCE ON ID_STATION=ID_STATION1 
         WHERE ID_STATION2=id_station_rendu
-    ) WHERE ID_VELO=@id_velo_emprunt;
+    ) WHERE ID_VELO=id_velo_emprunt;
 
     -- CA MARCHE
     UPDATE VELO SET ID_STATION=id_station_rendu
