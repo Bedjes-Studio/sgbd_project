@@ -242,16 +242,16 @@ BEGIN
     UPDATE STATION SET NB_BORNES_DISPO=@nb_bornes_disponibles-1
     WHERE ID_STATION=id_station_rendu;
 
+    -- update kilometrage et station velo
+    UPDATE VELO SET KILOMETRAGE = (
+        SELECT MAX(KILOMETRAGE_DEPART + DISTANCE)
+        FROM EMPRUNT JOIN DISTANCE ON ID_STATION=ID_STATION1 
+        WHERE ID_STATION2=id_station_rendu AND ID_VELO=1 AND HEURE_RENDU IS NULL
+    ) WHERE ID_VELO=id_velo_emprunt;
+
     -- Update emprunt.heure_rendu 
     UPDATE EMPRUNT SET HEURE_RENDU=NOW()
     WHERE ID_VELO=id_velo_emprunt AND HEURE_RENDU IS NULL;
-
-    -- update kilometrage et station velo
-    UPDATE VELO SET KILOMETRAGE = (
-        SELECT KILOMETRAGE_DEPART + DISTANCE
-        FROM EMPRUNT JOIN DISTANCE ON ID_STATION=ID_STATION1 
-        WHERE ID_STATION2=id_station_rendu
-    ) WHERE ID_VELO=id_velo_emprunt;
 
     -- CA MARCHE
     UPDATE VELO SET ID_STATION=id_station_rendu
