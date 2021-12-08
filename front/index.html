@@ -26,11 +26,17 @@
 			<button onclick="getApi('emprunt')">Emprunt</button>
 			<button onclick="getApi('station')">Station</button>
 			<button onclick="getApi('velo')">Velo</button>
+			<button onclick="send()">Test procedure</button>
 		</div>
 
 		<table id="tableGetResults">
 			<thead>
 				<tr id="apiResultHead">
+					<th scope="col">NOM</th>
+					<th scope="col">ADRESSE</th>
+					<th scope="col">COMMUNE</th>
+					<th scope="col">DATE_ADHESION</th>
+					<th scope="col">ID_ADHERENT</th>
 				</tr>
 			</thead>
 			<tbody id="apiResultBody">
@@ -46,8 +52,6 @@
 
 
 	<div>
-		<h1>Post</h1>
-
 		<h1>Ajouter</h1>
 
 
@@ -92,162 +96,153 @@
 			</div>
 		</div>
 		<button onclick="add()">Ajouter</button>
-
-		<h1>Supprimer</h1>
-
-
-		<h1>Mettre à jour</h1>
-
-		<select id="actionSelect">
-			<option value="">-- Choissez une action</option>
-			<option value="insert into">Ajouter</option>
-			<option value="delete from">Supprimer</option>
-			<option value="update">Mettre à jour</option>
-		</select>
-
-		<button onclick="postApi('commune')">Ajouter une commune </button>
 	</div>
 
 	<script>
 
-		// ##### POST #####
+		let table;
 
 		$(document).ready(function () {
-
-			document.getElementById("baseSelect").addEventListener("change", function () {
-
-				$('#addInputs').empty();
-
-				// TODO : fix inputs types
-				switch ($('#baseSelect').val()) {
-					case "emprunt":
-						$('#addInputs').append(`
-							<div class="mb-3 me-2">
-								<label class="form-label">Kilometrage de départ</label>
-								<input type="text" id="add_kilometrage_depart">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Heure de départ</label>
-								<input type="text" id="add_heure_depart">
-							</div>
-
-							<div class="mb-3 me-2">
-								<label class="form-label">Heure de rendu</label>
-								<input type="text" id="add_heure_rendu">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Id d'ahdérent</label>
-								<input type="text" id="add_id_adherent">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Id de station</label>
-								<input type="text" id="add_id_station">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Id de vélo</label>
-								<input type="text" id="add_id_velo">
-							</div>`);
-						break;
-
-					case "velo":
-						$('#addInputs').append(`
-							<div class="mb-3 me-2">
-								<label class="form-label">Marque</label>
-								<input type="text" id="add_marque">
-							</div>
-
-							<div class="mb-3 me-2">
-								<label class="form-label">Date mise en service</label>
-								<input type="text" id="add_edate_mise_en_service">
-							</div>
-
-							<div class="mb-3 me-2">
-								<label class="form-label">Kilometrage</label>
-								<input type="text" id="add_kilometrage">
-							</div>
-
-							<div class="mb-3 me-2">
-								<label class="form-label">État</label>
-								<input type="text" id="add_etat">
-							</div>
-							<div class="mb-3 me-2">
-								<label class="form-label">Niveau de batterie</label>
-								<input type="text" id="add_niveau_batterie">
-							</div>
-							<div class="mb-3 me-2">
-								<label class="form-label">Id de station</label>
-								<input type="text" id="add_id_station">
-							</div>
-						`);
-						break;
-
-					case "station":
-						$('#addInputs').append(`
-							<div class="mb-3 me-2">
-								<label class="form-label">Adresse</label>
-								<input type="text" id="add_adresse">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Commune</label>
-								<input type="text" id="add_commune">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Nombre de bornes</label>
-								<input type="text" id="add_nb_bornes">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Bornes disponibles</label>
-								<input type="text" id="add_nb_bornes_dispo">
-							</div>`);
-						break;
-
-					case "adherent":
-						$('#addInputs').append(`
-							<div class="mb-3 me-2">
-								<label class="form-label">Nom</label>
-								<input type="text" id="add_nom">
-							</div>
-							
-							<div class="mb-3 me-2">
-								<label class="form-label">Adresse</label>
-								<input type="text" id="add_adresse">
-							</div>
-
-							<div class="mb-3 me-2">
-								<label class="form-label">Commune</label>
-								<input type="text" id="add_commune">
-							</div>
-
-							<div class="mb-3 me-2">
-								<label class="form-label">Date d'adhesion</label>
-								<input type="text" id="add_date_adhesion">
-							</div>`);
-						break;
-					case "etat":
-						$('#addInputs').append(`
-							<div class="mb-3 me-2">
-								<label class="form-label">Description</label>
-								<input type="text" id="add_description">
-							</div>`);
-						break;
-
-					case "commune":
-						$('#addInputs').append(`
-							<div class="mb-3 me-2">
-								<label class="form-label">Nom de la commune</label>
-								<input type="text" id="add_nom_commune">
-							</div>`);
-						break;
-				}
-			});
+			table = $('#tableGetResults').DataTable();
+			getApi('adherent');
+			document.getElementById("baseSelect").addEventListener("change", baseSelectUpdater);
 		});
+
+		// ##### POST #####
+		function baseSelectUpdater() {
+
+			$('#addInputs').empty();
+
+			// TODO : fix inputs types
+			switch ($('#baseSelect').val()) {
+				case "emprunt":
+					$('#addInputs').append(`
+			<div class="mb-3 me-2">
+				<label class="form-label">Kilometrage de départ</label>
+				<input type="text" id="add_kilometrage_depart">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Heure de départ</label>
+				<input type="text" id="add_heure_depart">
+			</div>
+
+			<div class="mb-3 me-2">
+				<label class="form-label">Heure de rendu</label>
+				<input type="text" id="add_heure_rendu">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Id d'ahdérent</label>
+				<input type="text" id="add_id_adherent">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Id de station</label>
+				<input type="text" id="add_id_station">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Id de vélo</label>
+				<input type="text" id="add_id_velo">
+			</div>`);
+					break;
+
+				case "velo":
+					$('#addInputs').append(`
+			<div class="mb-3 me-2">
+				<label class="form-label">Marque</label>
+				<input type="text" id="add_marque">
+			</div>
+
+			<div class="mb-3 me-2">
+				<label class="form-label">Date mise en service</label>
+				<input type="text" id="add_edate_mise_en_service">
+			</div>
+
+			<div class="mb-3 me-2">
+				<label class="form-label">Kilometrage</label>
+				<input type="text" id="add_kilometrage">
+			</div>
+
+			<div class="mb-3 me-2">
+				<label class="form-label">État</label>
+				<input type="text" id="add_etat">
+			</div>
+			<div class="mb-3 me-2">
+				<label class="form-label">Niveau de batterie</label>
+				<input type="text" id="add_niveau_batterie">
+			</div>
+			<div class="mb-3 me-2">
+				<label class="form-label">Id de station</label>
+				<input type="text" id="add_id_station">
+			</div>
+		`);
+					break;
+
+				case "station":
+					$('#addInputs').append(`
+			<div class="mb-3 me-2">
+				<label class="form-label">Adresse</label>
+				<input type="text" id="add_adresse">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Commune</label>
+				<input type="text" id="add_commune">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Nombre de bornes</label>
+				<input type="text" id="add_nb_bornes">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Bornes disponibles</label>
+				<input type="text" id="add_nb_bornes_dispo">
+			</div>`);
+					break;
+
+				case "adherent":
+					$('#addInputs').append(`
+			<div class="mb-3 me-2">
+				<label class="form-label">Nom</label>
+				<input type="text" id="add_nom">
+			</div>
+			
+			<div class="mb-3 me-2">
+				<label class="form-label">Adresse</label>
+				<input type="text" id="add_adresse">
+			</div>
+
+			<div class="mb-3 me-2">
+				<label class="form-label">Commune</label>
+				<input type="text" id="add_commune">
+			</div>
+
+			<div class="mb-3 me-2">
+				<label class="form-label">Date d'adhesion</label>
+				<input type="text" id="add_date_adhesion">
+			</div>`);
+					break;
+				case "etat":
+					$('#addInputs').append(`
+			<div class="mb-3 me-2">
+				<label class="form-label">Description</label>
+				<input type="text" id="add_description">
+			</div>`);
+					break;
+
+				case "commune":
+					$('#addInputs').append(`
+			<div class="mb-3 me-2">
+				<label class="form-label">Nom de la commune</label>
+				<input type="text" id="add_nom_commune">
+			</div>`);
+					break;
+
+			}
+		}
 
 		function add() {
 			let data;
@@ -327,6 +322,9 @@
 
 		// ##### GET #####
 
+		$(document).ready(function () {
+		});
+
 		function getApi(api) {
 			sendRequest("/api/" + api, "GET", displayApi);
 		}
@@ -334,32 +332,45 @@
 		function displayApi(result) {
 			insertHeader(result);
 			insertBody(result);
-			// TODO : fix datatables issue
-			$('#tableGetResults').DataTable();
 		}
 
 
 		function insertHeader(result) {
-			let keys = Object.keys(result[0]);
-
+			table.destroy();
 			$("#apiResultHead").empty();
+
+			let keys = Object.keys(result[0]);
 			for (let key of keys) {
 				$("#apiResultHead").append('<th scope="col">' + key + ' </th>');
 			}
+			$("#apiResultHead").append('<th scope="col">Actions</th>');
+		}
+
+		// TODO : remove permanantly
+		function removeRow(element) {
+			console.log(element)
+			table.row($(element).parents('tr')).remove().draw();
 		}
 
 		function insertBody(result) {
-
 			$("#apiResultBody").empty();
+			table = $('#tableGetResults').DataTable({
+				"columnDefs": [{
+					"targets": -1,
+					"data": null,
+					"defaultContent": `<div class="d-flex">
+											<button onclick="console.log('EDIT');">EDIT</button>
+											<button onclick="removeRow(this);">REMOVE</button>
+										</div>`
+				}]
+			});
 
 			for (let row of result) {
-				let html = "<tr>";
+				let data = []
 				for (let key in row) {
-					html += "<td>" + row[key] + "</td>";
+					data.push(row[key]);
 				}
-				html += "</td>";
-
-				$("#apiResultBody").append(html);
+				table.row.add(data).draw();
 			}
 		}
 
@@ -374,6 +385,17 @@
 			xmlHttp.send();
 		}
 
+
+		function send() {
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+					console.log(xmlHttp.response);
+				}
+			}
+			xmlHttp.open("GET", "/api", true);
+			xmlHttp.send();
+		}
 	</script>
 </body>
 

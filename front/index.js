@@ -15,7 +15,7 @@ app.get('/', async (req, res) => {
 // API LIST
 app.get('/api', async (req, res) => {
     try {
-        const result = await db.pool.query("select * from commune");
+        const result = await db.pool.query("call creation_emprunt(1,1)");
         res.send(result);
     } catch (err) {
         throw err;
@@ -42,15 +42,15 @@ function parseData(data) {
     let columns = "(";
 
     for (let key in data) {
-        columns += "\`" + key +  "\`,";
+        columns += "\`" + key + "\`,";
         values += "\"" + data[key] + "\",";
     }
     columns = columns.slice(0, -1); // remove last comma
     values = values.slice(0, -1); // remove last comma
-    
+
     columns += ")";
     values += ")";
-    return { columns, values};
+    return { columns, values };
 }
 
 app.post('/api/:table/add', async (req, res) => {
@@ -70,14 +70,14 @@ app.post('/api/:table/add', async (req, res) => {
 
 // TODO : implements this api
 app.put('/', async (req, res) => {
-    
+
 });
 
 // ##### API DELETE #####
 
 // TODO : implements this api
 app.delete('/', async (req, res) => {
-    
+
 });
 
 // 404 
