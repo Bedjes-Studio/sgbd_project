@@ -1,4 +1,4 @@
-
+call generation_emprunts_aleatoires();
 -- /*
 -- Emprunts
 -- */
