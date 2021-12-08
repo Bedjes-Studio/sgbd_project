@@ -287,7 +287,7 @@ BEGIN
 
     -- update kilometrage et station velo
     UPDATE VELO SET KILOMETRAGE = (
-        SELECT KILOMETRAGE_DEPART + DISTANCE
+        SELECT MAX(KILOMETRAGE_DEPART + DISTANCE)
         FROM EMPRUNT JOIN DISTANCE ON ID_STATION=ID_STATION1 
         WHERE ID_STATION2=id_station_rendu
     ) WHERE ID_VELO=id_velo_emprunt;
@@ -341,18 +341,9 @@ BEGIN
         SET nb_emprunt_par_jour = ROUND (RAND() * 50);
         set time_courant = '00:00:00';
 
-        WHILE i <= nb_emprunt_par_jour or time_courant <= '23:59:59' DO
-            -- IF ((SELECT EMPRUNTE FROM VELOS WHERE ID_VELO = id_velo_current) = FALSE 
-            --     and 
-            --     (SELECT CHARGE FROM VELOS WHERE ID_VELO = id_velo_current) > 0) 
-            -- THEN
+        WHILE i <= nb_emprunt_par_jour or time_courant <= '23:00:00' DO
             
-            -- WHILE ((SELECT EMPRUNTE FROM VELOS WHERE ID_VELO = id_velo_current) = TRUE) DO
-            --     SET id_velo_current = ROUND( RAND() * ((SELECT COUNT(*) FROM VELOS) - 1) + 1 );
-            -- END WHILE;
-            -- WHILE ((SELECT COUNT(*) FROM EMPRUNT WHERE ID_ADHERENT=id_adherent_current AND HEURE_RENDU IS NULL) != 0) DO
-                SET id_velo_current = ROUND( RAND() * ((SELECT COUNT(*) FROM VELO) - 1) + 1 );
-            -- END WHILE;
+            SET id_velo_current = ROUND( RAND() * ((SELECT COUNT(*) FROM VELO) - 1) + 1 );
             
             SET id_adherent_current = ROUND( RAND() * ((SELECT COUNT(*) FROM ADHERENT) - 1) + 1 );
             
@@ -362,9 +353,8 @@ BEGIN
             WHILE ((SELECT NB_BORNES_DISPO FROM STATION WHERE ID_STATION = id_station_current) = 0) DO
                 SET id_station_current = ROUND( RAND() * ((SELECT COUNT(*) FROM STATION) - 1) + 1 );
             END WHILE;
-            -- WHILE ((SELECT COUNT(*) FROM EMPRUNT WHERE ID_VELO=id_velo_current AND HEURE_RENDU IS NULL) != 1)
-            -- CALL rendu_emprunt_timer(id_station_current, id_velo_current, date_courante + SEC_TO_TIME(TIME_TO_SEC(time_courant) + (300 + ROUND(RAND() * 1800))));
-    
+            CALL rendu_emprunt_timer(id_station_current, id_velo_current, date_courante + SEC_TO_TIME(TIME_TO_SEC(time_courant) + (300 + ROUND(RAND() * 1800))));
+
             SET i = i + 1;
             SET time_courant = SEC_TO_TIME(TIME_TO_SEC(time_courant) + (600 + ROUND(RAND() * 2000)));
             -- END IF;
