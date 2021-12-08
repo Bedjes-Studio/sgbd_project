@@ -52,8 +52,6 @@
 
 
 	<div>
-		<h1>Post</h1>
-
 		<h1>Ajouter</h1>
 
 
@@ -98,20 +96,6 @@
 			</div>
 		</div>
 		<button onclick="add()">Ajouter</button>
-
-		<h1>Supprimer</h1>
-
-
-		<h1>Mettre à jour</h1>
-
-		<select id="actionSelect">
-			<option value="">-- Choissez une action</option>
-			<option value="insert into">Ajouter</option>
-			<option value="delete from">Supprimer</option>
-			<option value="update">Mettre à jour</option>
-		</select>
-
-		<button onclick="postApi('commune')">Ajouter une commune </button>
 	</div>
 
 	<script>
@@ -354,16 +338,32 @@
 		function insertHeader(result) {
 			table.destroy();
 			$("#apiResultHead").empty();
-			
+
 			let keys = Object.keys(result[0]);
 			for (let key of keys) {
 				$("#apiResultHead").append('<th scope="col">' + key + ' </th>');
 			}
+			$("#apiResultHead").append('<th scope="col">Actions</th>');
+		}
+
+		// TODO : remove permanantly
+		function removeRow(element) {
+			console.log(element)
+			table.row($(element).parents('tr')).remove().draw();
 		}
 
 		function insertBody(result) {
 			$("#apiResultBody").empty();
-			table = $('#tableGetResults').DataTable();
+			table = $('#tableGetResults').DataTable({
+				"columnDefs": [{
+					"targets": -1,
+					"data": null,
+					"defaultContent": `<div class="d-flex">
+											<button onclick="console.log('EDIT');">EDIT</button>
+											<button onclick="removeRow(this);">REMOVE</button>
+										</div>`
+				}]
+			});
 
 			for (let row of result) {
 				let data = []
