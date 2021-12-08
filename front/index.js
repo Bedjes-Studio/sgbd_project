@@ -39,21 +39,26 @@ app.get('/api/:table', async (req, res) => {
 // ##### API POST #####
 function parseData(data) {
     let values = "(";
+    let columns = "(";
 
     for (let key in data) {
+        columns += "\`" + key +  "\`,";
         values += "\"" + data[key] + "\",";
     }
+    columns = columns.slice(0, -1); // remove last comma
     values = values.slice(0, -1); // remove last comma
-
+    
+    columns += ")";
     values += ")";
-    return values;
+    return { columns, values};
 }
 
-app.post('/api/:table/', async (req, res) => {
+app.post('/api/:table/add', async (req, res) => {
     try {
-        let values = parseData(req.body);
+        let { columns, values } = parseData(req.body);
+        console.log(columns);
         console.log(values);
-        await db.pool.query("insert into " + req.params.table + " values " + values);
+        await db.pool.query("insert into " + req.params.table + " " + columns + " values " + values);
         res.send("Table updated.");
     } catch (err) {
         res.send("Table not updated : \n" + err);
