@@ -1,2 +1,0 @@
-https://mariadb.com/fr/resources/blog/getting-started-with-connector-node-js/
-https://newbedev.com/js-interact-maria-db-code-example
