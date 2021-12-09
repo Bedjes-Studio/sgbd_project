@@ -316,24 +316,24 @@
 			}
 			xmlHttp.open("POST", "/api/" + table + "/" + action, true);
 			xmlHttp.setRequestHeader('Content-Type', 'application/json');
-
 			xmlHttp.send(data);
 		}
 
 		// ##### GET #####
+		let getTable;
 
 		$(document).ready(function () {
 		});
 
 		function getApi(api) {
-			sendRequest("/api/" + api, "GET", displayApi);
+			getTable = api;
+			sendRequest("/api/" + getTable, "GET", displayApi);
 		}
 
 		function displayApi(result) {
 			insertHeader(result);
 			insertBody(result);
 		}
-
 
 		function insertHeader(result) {
 			table.destroy();
@@ -346,9 +346,32 @@
 			$("#apiResultHead").append('<th scope="col">Actions</th>');
 		}
 
+		function deleteApi(table, key, value) {
+
+			var xmlHttp = new XMLHttpRequest();
+			xmlHttp.onreadystatechange = function () {
+				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
+					console.log(xmlHttp.response);
+				}
+			}
+			xmlHttp.open("DELETE", "/api/" + table + "/" + key + "/" + value, true);
+			xmlHttp.setRequestHeader('Content-Type', 'application/json');
+			xmlHttp.send();
+		}
+
 		// TODO : remove permanantly
 		function removeRow(element) {
-			console.log(element)
+			data = table.row($(element).parents('tr')).data();
+			let key;
+			let value;
+
+			switch (getTable) {
+				case "adherent":
+					key = "ID_ADHERENT";
+					value = data[4];
+					break;
+			}
+			deleteApi(getTable, key, value);
 			table.row($(element).parents('tr')).remove().draw();
 		}
 
