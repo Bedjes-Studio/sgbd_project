@@ -1,6 +1,13 @@
 Faire le front
-Script d'installation
 
+attention config db.js
+modif tous les noms en majuscule
+bouton poubelle et bouton modifier
+if dans get distance
+afficher etat à la place de id dans la table velo
 ajouter une création de base dans le make
+bouton rendre emprunt
+
+ajouter empru : check procédure
 
 https://stackoverflow.com/questions/107390/whats-the-difference-between-a-post-and-a-put-http-request
