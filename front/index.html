@@ -24,15 +24,26 @@
 		<div id="editionContainer" class="d-flex flex-wrap">
 		</div>
 
-		<div class="mb-3">
-			<button onclick="displayAPI('ADHERENT')">Adherent</button>
-			<button onclick="displayAPI('COMMUNE')">Communes</button>
-			<button onclick="displayAPI('EMPRUNT')">Emprunt</button>
-			<button onclick="displayAPI('STATION')">Station</button>
-			<button onclick="displayAPI('VELO')">Velo</button>
-			<button onclick="displayAPI('DISTANCE')">Distance</button>
+		<div class="mb-4 d-flex align-items-center">
+			<p class="me-3" >Tables</p>
+			<button class="btn btn-primary me-2" onclick="displayAPI('ADHERENT')">Adherent</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('COMMUNE')">Communes</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('EMPRUNT')">Emprunt</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('STATION')">Station</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('VELO')">Velo</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('DISTANCE')">Distance</button>
+		</div>
 
-			<button onclick="send()">Test procedure</button>
+		<div class="mb-4 d-flex align-items-center">
+			<p class="me-3">Infos</p>
+			<button class="btn btn-primary me-2" onclick="displayAPI('infos/bikeused')">Vélos actuellement occupés</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('infos/doubleloan')">Les adhérents qui ont emprunté plus d'une fois un même
+				vélos</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('infos/bike1')">Vélos de la station 1</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('infos/user1')">Adhérents de la commune 1</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('stats/stations')">Classement des stations par nombre de bornes disponnibles par
+				commune</button>
+			<button class="btn btn-primary me-2" onclick="displayAPI('stats/charge')">Classement des vélos les plus chargés par station</button>
 		</div>
 
 		<table id="tableGetResults">
@@ -53,14 +64,15 @@
 
 	<div>
 		<h1>Stats</h1>
-		<button onclick="">Ajouter une commune </button>
+		<div class="mb-3">
+			<button class="btn btn-primary me-2" onclick="statAPI('users')">Moyenne du nombre d’usagers par vélo par jour</button>
+			<button class="btn btn-primary me-2" onclick="statAPI('distance')">Moyenne des distances parcourues par les vélos sur une
+				semaine</button>
+		</div>
 	</div>
-
 
 	<div>
 		<h1>Ajouter</h1>
-
-
 		<select id="baseSelect" class="mb-3">
 			<option value="EMPRUNT">Emprunt</option>
 			<option value="RENDU">Rendu</option>
@@ -72,7 +84,7 @@
 
 		<div id="addInputsContainer" class="d-flex flex-wrap">
 		</div>
-		<button onclick="addAPI()">Ajouter</button>
+		<button class="btn btn-primary me-2" onclick="addAPI()">Ajouter</button>
 	</div>
 
 	<div id="champ">
@@ -87,8 +99,8 @@
 				"targets": -1,
 				"data": null,
 				"defaultContent": `<div class="d-flex">
-										<button onclick="editRow(this,  dataTable.row($(this).parent().parent()).data())">EDIT</button>
-										<button onclick="removeRow(this);">REMOVE</button>
+										<button class="btn btn-primary me-2" onclick="editRow(this,  dataTable.row($(this).parent().parent()).data())">EDIT</button>
+										<button class="btn btn-primary me-2" onclick="removeRow(this);">REMOVE</button>
 									</div>`
 			}]
 		}
@@ -129,7 +141,8 @@
 			for (let key of keys) {
 				$("#apiResultHead").append('<th scope="col">' + key + ' </th>');
 			}
-			if (tableDisplayed != "DISTANCE") {
+			if (tableDisplayed != "DISTANCE" && tableDisplayed != "infos/bikeused" && tableDisplayed != "infos/doubleloan"
+				&& tableDisplayed != "stats/stations" && tableDisplayed != "infos/user1" && tableDisplayed != "infos/bike1" && tableDisplayed != "stats/charge") {
 				$("#apiResultHead").append('<th scope="col">Actions</th>');
 			}
 		}
@@ -137,7 +150,8 @@
 		function insertBody(result) {
 			$("#apiResultBody").empty();
 
-			if (tableDisplayed == "DISTANCE") {
+			if (tableDisplayed == "DISTANCE" || tableDisplayed == "infos/bikeused" || tableDisplayed == "infos/doubleloan" || tableDisplayed == "infos/user1" || tableDisplayed == "infos/bike1"
+				|| tableDisplayed == "stats/stations" || tableDisplayed == "stats/charge") {
 				dataTable = $('#tableGetResults').DataTable();
 			} else if (tableDisplayed == "EMPRUNT") {
 				dataTable = $('#tableGetResults').DataTable({
@@ -145,7 +159,7 @@
 						"targets": -1,
 						"data": null,
 						"defaultContent": `<div class="d-flex">
-										<button onclick="returnBike(this);">Rendre</button>
+										<button class="btn btn-primary me-2" onclick="returnBike(this);">Rendre</button>
 									</div>`
 					}]
 				});
@@ -192,7 +206,6 @@
 			});
 		}
 
-		// TODO : check if id column can be set (used for add and coherence)
 		function removeRow(element) {
 			data = dataTable.row($(element).parents('tr')).data();
 			let { key, value } = getKey(tableDisplayed, data);
@@ -233,6 +246,14 @@
 			requestAPI("DELETE", table + "/" + key + "/" + value, (result) => {
 				console.log(result);
 				dataTable.row($(element).parents('tr')).remove().draw();
+			});
+		}
+		// ##### STATS #####
+
+
+		function statAPI(api) {
+			requestAPI("GET", "stats/" + api, (result) => {
+				console.log(result);
 			});
 		}
 
@@ -350,7 +371,7 @@
 										<input type="text" id="edit_` + data[i].Field + `" value="` + values[i] + `">
 									</div>`);
 				}
-				$("#editionContainer").append(`<button onclick="editAPI()">Editer</button>`);
+				$("#editionContainer").append(`<button class="btn btn-primary me-2" onclick="editAPI()">Editer</button>`);
 			});
 		}
 

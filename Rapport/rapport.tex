@@ -7,6 +7,7 @@
 \usepackage[table]{xcolor}
 \usepackage[colorlinks]{hyperref} % Pour les liens du sommaire cliquables.
 \usepackage{graphicx}
+\graphicspath{{./img/}}
 \usepackage{float}
 \usepackage[french,linesnumbered]{algorithm2e}
 \usepackage{listings}
@@ -37,7 +38,7 @@
       Hugo \bsc{Langlais} \quad Antoine \bsc{Gaudy} \quad Guillaume \bsc{Fornes} \\[0.5 cm]}
 
       {\large Encadré par S. \bsc{Lombardy} et S. \bsc{Mosbah}}\\ \vfill
-      \includegraphics[scale=0.4]{img/logo.em-bxinp} \vfill
+      \includegraphics[scale=0.4]{logo_em-bxinp} \vfill
       {\large Semestre 7 - 2021}
     \end{center}
   \end{titlepage}
@@ -60,7 +61,7 @@
   Les systèmes de vélos empruntables momentanément pour un trajet ou plus se multiplient.
   Ces systèmes sont appréciés en ville, car ils permettent au client d'éviter d'avoir à acheter un vélo et résolvent le problème
   de la nécessitée d'un emplacement de stockage personnel de ce dernier. \\
-  Notre client désire ici developer son propre système de location de vélos électriques et souhaite donc mettre en place une base de
+  Notre client désire ici développer son propre système de location de vélos électriques et souhaite donc mettre en place une base de
   donnée afin de gérer ce dernier.
   L'objectif est donc de pouvoir gérer une quantité de vélo, d'adhérents ainsi que les différentes stations des différentes communes
   concernées par le système.
@@ -96,28 +97,29 @@
 
   \begin{figure}[!h]
     \centering
-    \includegraphics[scale=0.5]{img/entite_association}
+    \includegraphics[scale=0.5]{entite_association}
     \caption{Schéma entité-association}
     \label{fig:entite}
   \end{figure}
 
   \subsection{Schéma relationnel}\label{sec:relationel}
-
+  Passons maintenant à la traduction de ce modèle associatif en un modèle relationnel.\\
   Dans notre modèle entité association, on retrouve premièrement des associations 1, n.
   Dans ce cas la, la traduction au modèle relationnel se fait en définissant comme clé étrangère, pour l'entité de côté 1,
-  la clé primaire de l'entité de côté n.
+  la clé primaire de l'entité de côté n.\\
+  
   Le deuxième cas que l'on retrouve est celui de la relation de cardinalité 1, 1 qu'est \textit{Distance} entre deux entité \texttt{STATION}.
   Celle-ci se retrouvera donc comme une table dans le modèle relationnel avec comme clé primaire les 2 clés étrangères des
   deux stations.
   Nous avons donc finalement le modèle relationnel suivant :\\
   \begin{itemize}
-    \item ADHERENT (\underline{ID adherent}, nom, prénom, adresse, date d'adhésion, #ID commune (non nul));
+    \item ADHERENT (\underline{ID adherent}, nom, prénom, adresse, date d'adhésion, \#ID commune (non nul));
     \item COMMUNE (\underline{ID commune}, nom);
-    \item STATION (\underline{ID station}, adresse, nb bornes, nb bornes dispo, #ID commune (non nul));
-    \item DISTANCE (\underline{#ID station1 (non nul), #ID station2 (non nul)}, distance);
-    \item VELO (\underline{ID vélo}, marque, date mise en service, kilométrage, niveau de batterie, #ID station, #ID état (non nul));
-    \item ETAT (\underline{ID_état}, description);
-    \item EMPRUNT (\underline{ID emprunt}, km départ, heure)
+    \item STATION (\underline{ID station}, adresse, nb bornes, nb bornes dispo, \#ID commune (non nul));
+    \item DISTANCE (\underline{\#ID station1 (non nul), \#ID station2 (non nul)}, distance);
+    \item VELO (\underline{ID vélo}, marque, date mise en service, kilométrage, niveau de batterie, \#ID station, \#ID état (non nul));
+    \item ETAT (\underline{ID état}, description);
+    \item EMPRUNT (\underline{ID emprunt}, km départ, heure);
   \end{itemize}
   \begin{figure}[!h]
     \centering
@@ -127,15 +129,32 @@
   \end{figure}
 
   \section{Implémentation}\label{sec:implementation}
-  Maintenant que nous disposons de notre schéma relationel en 3\ieme{} forme,
+  Maintenant que nous disposons de notre schéma relationnel en 3\ieme{} forme, passons à l'étape de la création de la base de donnée en sql.\\
+  Pour ce faire nous avons choisis d'utiliser MariaDB pour sa simplicité, sa rapidité, et le fait qu'il soit open-source, ce qui est important pour nous trois.\\
+  
   \subsection{Création et remplissage de la base de donnée}\label{subsec:crea}
   \subsubsection{Les tables}
+  Nous avons donc commencé par implémenter les différentes tables brutes correspondantes à notre modèle relationnel, puis essayer de les remplir à l'aide de requêtes simples. De cette manière nous avons pu commencer à tester des premières requêtes basiques pour observer des début de résultats, avant de commencer à complexifié et compléter la base pour la rendre plus cohérente.\\
+  
   \subsubsection{Les Triggers}
+  
+  Les différents triggers de notre implémentation sont faits en sorte que les données de la base restent cohérentes au fil des modifications apportées. La plupart des triggers servent majoritairement à modifier les champs des différentes tables lorsqu'une modification ou une insertion est apportée dans une table.\\
+  
+  Lorsqu'on ajoute une station le nombre de bornes disponibles est mis automatiquement au maximum. 
+  Quand on veut ajouter un vélo dans une station le nombre de bornes disponibles est mis a jour si il y en a assez de libre. 
+  
   \subsubsection{Les procédures}
+  Nous avons décidé de faire des procédures pour faciliter l'ajout d'emprunts et le rendu de ces derniers. Il suffit d'appeler la procédure avec l'id du vélo que l'on veut emprunter et l'id de la personne qui emprunte et la procédure gère si l'adhérent a déjà un emprunt en cours ou non, si le vélo est déjà emprunté, la mise a jour du nombre de bornes disponibles dans la station, la mise a jour des informations du vélo et enfin l'insertion de l'emprunt dans la base. 
+  Il existe une version de la procédure qui prends également une date en plus et crée un emprunt à cette date. \\
+  
+  Une autre procédure gère le rendu des emprunts, il faut lui donner un id de station dans laquelle on veut rendre un vélo et l'id du vélo en question. Cette procédure vérifie si la station en question a assez de bornes disponibles, si le vélo est bel et bien en train d'être emprunté. La procédure met également a jour le kilométrage du vélo, le nombre de bornes disponibles dans la station et met l'heure de rendu à l'heure a laquelle la procédure a été appelée. Une autre procédure similaire peut prendre une heure en paramètre afin de rendre l'emprunt a une heure spécifiée. 
+  Nous avons également une procédure qui créée un nombre d'emprunts aléatoires sur la période des 7 derniers jours et les rend dans l'heure qui suit leur emprunt. Cette procédure nous sert à faire nos statistiques sur une plage de données assez significative.
   
   \subsection{Implémentation des requêtes}\label{subsec:requete}
   \subsubsection{Les consultations}
+  Les différentes requêtes de consultation de la base ont été assez simples à faire car c'était des requêtes basiques de sélection avec condition ou non.
   \subsubsection{Les statistiques}
+  Les différentes statistiques ont été implémentées de deux différentes manières, Les requêtes simples ont été réalisées directement en SQL basique tandis que les statistiques plus complexes ont été faites via des fonctions.
   
   \section{Utilisation}\label{sec:utili}
   
@@ -145,8 +164,8 @@
   
   Le projet est basé sur 2 serveurs. Le premier est un serveur MariaDB, il s'occupe de gérer la base. Le deuxième est un serveur NodeJS qui fournit l'interface graphique du projet. \\
  
-  Nous avons construit le serveur Node afin qu'il mettre à disposition des API pour la page principale. Pour cela, nous avons utilisé le module express. Ce dernier permet de gérer très facilement le rootage, en utilisant des expressions régulières notamment, et de répondre différemment suivant la méthode de requête utilisée. C'est le serveur NodeJS qui s'occupe d'envoyer les requêtes au serveur MariaDB.
-  Pour le rendu, nous avons utilisé Jquery et Bootstrap, afin de manipuler plus efficacement le DOM et de désigner rapidement l'interface. Pour l'affichage des tables, le plug-in Datatables s'est montré particulièrement efficace. \\
+  Nous avons construit le serveur Node afin qu'il mettre à disposition des API pour la page principale. Pour cela, nous avons utilisé le module express. Ce dernier permet de gérer très facilement le rootage, en utilisant des expressions régulières notamment, et de répondre différemment suivant la méthode de requête utilisée. C'est le serveur NodeJS qui s'occupe d'envoyer les requêtes au serveur MariaDB. L'utilisation d'API permet de rentre l'interface très incrémentale, ajouter une fonctionnalité revient à ajouter une route.
+  Pour le rendu, nous avons utilisé Jquery et Bootstrap, afin de manipuler plus efficacement le DOM et de désigner rapidement l'interface. Pour l'affichage des tables, le plug-in Datatables s'est montré particulièrement efficace. La recherche sur les champs et la pagination sont très utiles pour avoir une information rapidement. \\
   
   La procédure d'installation ainsi que les dépendances du projet sont détaillées dans le fichier \mbox{\textit{/front/README.md}}.
   
@@ -165,4 +184,8 @@ L'ensemble des tables peut être affiché et modifié (sauf la table \textit{dis
 Pour l'insertion d'éléments dans la base, nous avons ajouté au formulaire uniquement les champs strictement nécessaires. Le calcul des clés primaires, la création et le rendu d'un emprunt se font via des procédures. Nous avons par exemple uniquement besoin de l'id de l'adhérent et du vélo utilisé pour créer un emprunt, le reste des champs est calculé automatiquement. Notons qu'il n'y a aucune vérification du les informations saisies, le projet est donc vulnérable aux injections SQL.
 
   \section{Conclusion}\label{sec:ccl}
+  Ce projet a été une excellente occasion de mettre en \oe uvre et d'approfondir nos connaissances en bases de données et en développement d'interface utilisateur.
+  Un des éléments intéressants de ce projet est son incrémentabilité, ce qui nous a permit de continuer à l'améliorer sur toute sa durée avec les différentes fonctionnalités que nous avons apprises.
+  Plusieurs amélioration étaient encore envisageables, comme la création d'une table \texttt{MARQUE} qui, à l'instar de \texttt{ETAT}, aurait permit d'éviter une répétition.\\
+  
 \end{document}

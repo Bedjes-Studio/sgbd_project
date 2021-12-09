@@ -12,7 +12,8 @@ $ npm install
 # Créations de la base de données
 
 ```bash
-$ mariadb ???
+$ mariadb
+$ source make.sql
 ```
 
 *si besoin, créez les utilisateurs nécessaires*
@@ -20,6 +21,7 @@ $ mariadb ???
 # Lancement du serveur : 
 
 ```bash
+$ cd ./front
 $ npm run build
 ```
 

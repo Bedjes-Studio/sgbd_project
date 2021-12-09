@@ -46,9 +46,75 @@ app.get('/api/:table/columns', async (req, res) => {
     }
 });
 
+app.get('/api/infos/bikeused', async (req, res) => {
+    try {
+        const result = await db.pool.query(`SELECT ID_VELO,
+                                            MARQUE,
+                                            KILOMETRAGE
+                                            FROM VELO 
+                                            WHERE ID_VELO IN   (SELECT ID_VELO
+                                                                FROM EMPRUNT
+                                                                WHERE HEURE_RENDU IS NULL
+                                                                )`);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+app.get('/api/infos/doubleloan', async (req, res) => {
+    try {
+        const result = await db.pool.query(`SELECT NOM,
+                                            ID_VELO,
+                                            COUNT(ID_VELO)
+                                            FROM ADHERENT
+                                            NATURAL JOIN EMPRUNT
+                                            NATURAL JOIN VELO
+                                            GROUP BY ID_ADHERENT
+                                            HAVING COUNT(ID_VELO) >= 2;`);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+app.get('/api/infos/bike1', async (req, res) => {
+    try {
+        // Tout les vélos de la station 1
+        const result = await db.pool.query(`SELECT *
+                                            FROM VELO
+                                            WHERE ID_STATION=1;`);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+app.get('/api/infos/user1', async (req, res) => {
+    // Tous les adhérents de la commune 1
+    try {
+        const result = await db.pool.query(`SELECT id_adherent,
+                                            NOM,
+                                            COMMUNE
+                                            FROM ADHERENT
+                                            NATURAL JOIN COMMUNE
+                                            WHERE ADHERENT.COMMUNE = COMMUNE.ID_COMMUNE
+                                            AND COMMUNE.ID_COMMUNE=1;`);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+
+
 app.get('/api/stats/users', async (req, res) => {
     try {
-        const result = await db.pool.query("select call stat_adherent_par_velo()");
+        const result = await db.pool.query("select stat_adherent_par_velo()");
         res.setHeader('Content-Type', 'application/json');
         res.json(result);
     } catch (err) {
