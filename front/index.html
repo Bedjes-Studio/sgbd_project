@@ -20,6 +20,10 @@
 	<div>
 		<h1>Getter</h1>
 
+		<div id="editionContainer">
+
+		</div>
+
 		<div class="mb-3">
 			<button onclick="getApi('adherent')">Adherent</button>
 			<button onclick="getApi('commune')">Communes</button>
@@ -347,7 +351,6 @@
 		}
 
 		function deleteApi(table, key, value) {
-
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.onreadystatechange = function () {
 				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
@@ -359,7 +362,6 @@
 			xmlHttp.send();
 		}
 
-		// TODO : remove permanantly
 		function removeRow(element) {
 			data = table.row($(element).parents('tr')).data();
 			let key;
@@ -370,9 +372,29 @@
 					key = "ID_ADHERENT";
 					value = data[4];
 					break;
+				case "commune":
+					key = "ID_COMMUNE";
+					value = data[1];
+					break;
+				case "emprunt":
+					key = "ID_EMPRUNT";
+					value = data[5];
+					break;
+				case "station":
+					key = "ID_STATION";
+					value = data[4];
+					break;
+				case "velo":
+					key = "ID_VELO";
+					value = data[6];
+					break;
 			}
 			deleteApi(getTable, key, value);
 			table.row($(element).parents('tr')).remove().draw();
+		}
+
+		function editRow(element) {
+			$("#editionContainer").append("ouiiii");
 		}
 
 		function insertBody(result) {
@@ -382,7 +404,7 @@
 					"targets": -1,
 					"data": null,
 					"defaultContent": `<div class="d-flex">
-											<button onclick="console.log('EDIT');">EDIT</button>
+											<button onclick="editRow(this)">EDIT</button>
 											<button onclick="removeRow(this);">REMOVE</button>
 										</div>`
 				}]
