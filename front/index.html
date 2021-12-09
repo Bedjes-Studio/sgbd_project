@@ -25,11 +25,11 @@
 		</div>
 
 		<div class="mb-3">
-			<button onclick="getApi('adherent')">Adherent</button>
-			<button onclick="getApi('commune')">Communes</button>
-			<button onclick="getApi('emprunt')">Emprunt</button>
-			<button onclick="getApi('station')">Station</button>
-			<button onclick="getApi('velo')">Velo</button>
+			<button onclick="displayAPI('adherent')">Adherent</button>
+			<button onclick="displayAPI('commune')">Communes</button>
+			<button onclick="displayAPI('emprunt')">Emprunt</button>
+			<button onclick="displayAPI('station')">Station</button>
+			<button onclick="displayAPI('velo')">Velo</button>
 			<button onclick="send()">Test procedure</button>
 		</div>
 
@@ -51,7 +51,7 @@
 
 	<div>
 		<h1>Stats</h1>
-		<button onclick="postApi('commune')">Ajouter une commune </button>
+		<button onclick="">Ajouter une commune </button>
 	</div>
 
 
@@ -80,98 +80,35 @@
 	<script>
 
 		let table;
+		datatableConfig = {
+			"columnDefs": [{
+				"targets": -1,
+				"data": null,
+				"defaultContent": `<div class="d-flex">
+										<button onclick="editRow(this)">EDIT</button>
+										<button onclick="removeRow(this);">REMOVE</button>
+									</div>`
+			}]
+		}
 
 		$(document).ready(function () {
 			table = $('#tableGetResults').DataTable();
-			getApi('adherent');
+			displayAPI('adherent');
 
 			addInputs($("#addInputsContainer"), $('#baseSelect').val());
 			document.getElementById("baseSelect").addEventListener("change", baseSelectUpdater);
 		});
 
-		// ##### POST #####
-		function baseSelectUpdater() {
-			addInputs($("#addInputsContainer"), $('#baseSelect').val());
-		}
-
-		function add() {
-			let data;
-			let table = $('#baseSelect').val();
-
-			switch (table) {
-				case "emprunt":
-					data = JSON.stringify({
-						"KILOMETRAGE_DEPART": $("#add_kilometrage_depart").val(),
-						"HEURE_DEPART": $("#add_heure_depart").val(),
-						"HEURE_RENDU": $("#add_heure_rendu").val(),
-						"ID_ADHERENT": $("#add_id_adherent").val(),
-						"ID_STATION": $("#add_id_station").val(),
-						"ID_VELO": $("#add_id_velo").val(),
-					});
-					break;
-
-				case "velo":
-					data = JSON.stringify({
-						"MARQUE": $("#add_marque").val(),
-						"DATE_MISE_EN_SERVICE": $("#add_edate_mise_en_service").val(),
-						"KILOMETRAGE": $("#add_kilometrage").val(),
-						"ETAT": $("#add_etat").val(),
-						"NIVEAU_BATTERIE": $("#add_niveau_batterie").val(),
-						"ID_STATION": $("#add_id_station").val(),
-					});
-					break;
-
-				case "station":
-					data = JSON.stringify({
-						"ADRESSE": $("#add_adresse").val(),
-						"COMMUNE": $("#add_commune").val(),
-						"NB_BORNES": $("#add_nb_bornes").val(),
-						"NB_BORNES_DISPO": $("#add_nb_bornes_dispo").val(),
-					});
-					break;
-
-				case "adherent":
-					data = JSON.stringify({
-						"NOM": $("#add_nom").val(),
-						"ADRESSE": $("#add_adresse").val(),
-						"COMMUNE": $("#add_commune").val(),
-						"DATE_ADHESION": $("#add_date_adhesion").val(),
-					});
-					break;
-
-				case "etat":
-					data = JSON.stringify({
-						"DESCRIPTION": $("#add_description").val(),
-					});
-					break;
-
-				case "commune":
-					data = JSON.stringify({
-						"NOM_COMMUNE": $("#add_nom_commune").val(),
-					});
-					break;
-			}
-
-
-			postApi(data, table, "add")
-		}
-
-		function postApi(data, table, action) {
-			requestAPI("POST", table + "/" + action, console.log, data)
-		}
-
 		// ##### GET #####
+
 		let tableDisplayed;
 
-		$(document).ready(function () {
-		});
-
-		function getApi(api) {
+		function displayAPI(api) {
 			tableDisplayed = api;
-			requestAPI("GET", tableDisplayed, displayApi);
+			requestAPI("GET", tableDisplayed, displayTable);
 		}
 
-		function displayApi(result) {
+		function displayTable(result) {
 			insertHeader(result);
 			insertBody(result);
 		}
@@ -187,11 +124,24 @@
 			$("#apiResultHead").append('<th scope="col">Actions</th>');
 		}
 
-		function deleteAPI(table, key, value) {
-			requestAPI("DELETE", table + "/" + key + "/" + value, console.log);
+		function insertBody(result) {
+			$("#apiResultBody").empty();
+			table = $('#tableGetResults').DataTable(datatableConfig);
+
+			for (let row of result) {
+				let data = []
+				for (let key in row) {
+					data.push(row[key]);
+				}
+				table.row.add(data).draw();
+			}
 		}
 
-		// check if id column can be set (used for add and coherence)
+		function editRow(element) {
+			addInputs($("#editionContainer"), tableDisplayed);
+		}
+
+		// TODO : check if id column can be set (used for add and coherence)
 		function removeRow(element) {
 			data = table.row($(element).parents('tr')).data();
 			let key;
@@ -223,57 +173,27 @@
 			table.row($(element).parents('tr')).remove().draw();
 		}
 
-		function editRow(element) {
-			let data = table.row($(element).parents('tr')).data();
-
-			let columnsNames = $("#apiResultHead").children();
-
-			for (let i = 0; i < columnsNames.length - 1; ++i) {
-
-				$("#editionContainer").append($(columnsNames[i]).text());
-
-			}
-
-
+		function deleteAPI(table, key, value) {
+			requestAPI("DELETE", table + "/" + key + "/" + value, console.log);
 		}
 
-		function insertBody(result) {
-			$("#apiResultBody").empty();
-			table = $('#tableGetResults').DataTable({
-				"columnDefs": [{
-					"targets": -1,
-					"data": null,
-					"defaultContent": `<div class="d-flex">
-											<button onclick="editRow(this)">EDIT</button>
-											<button onclick="removeRow(this);">REMOVE</button>
-										</div>`
-				}]
-			});
+		// ADD
 
-			for (let row of result) {
-				let data = []
-				for (let key in row) {
-					data.push(row[key]);
-				}
-				table.row.add(data).draw();
-			}
+		function baseSelectUpdater() {
+			addInputs($("#addInputsContainer"), $('#baseSelect').val());
 		}
 
-		function addInputs(container, base) {
+		function add() {
+			let table = $('#baseSelect').val();
+			let json = {} ;
 
-			container.empty();
-
-			requestAPI("GET", base + "/columns", (data) => {
+			requestAPI("GET", table + "/columns", (data) => {
 				for (row of data) {
-					container.append(`
-						<div class="mb-3 me-2">
-							<label class="form-label">` + row.Field + `</label>
-							<input type="text" id="add_` + row.Field + `">
-						</div>`);
+					json[row.Field] = $("#add_" + row.Field).val()
 				}
 			});
+			requestAPI("POST", table + "/add", console.log, JSON.stringify(data))
 		}
-
 
 		// Utils
 
@@ -299,6 +219,19 @@
 				return false;
 			}
 			return true;
+		}
+
+		function addInputs(container, base) {
+
+			container.empty();
+			requestAPI("GET", base + "/columns", (data) => {
+				for (row of data) {
+					container.append(`<div class="mb-3 me-2">
+										<label class="form-label">` + row.Field + `</label>
+										<input type="text" id="add_` + row.Field + `">
+									</div>`);
+				}
+			});
 		}
 
 	</script>
