@@ -36,6 +36,16 @@ app.get('/api/:table', async (req, res) => {
     }
 });
 
+app.get('/api/:table/columns', async (req, res) => {
+    try {
+        const result = await db.pool.query("show columns from " + req.params.table);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
 // ##### API ADD #####
 function parseData(data) {
     let values = "(";

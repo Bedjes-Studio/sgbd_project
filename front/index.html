@@ -68,38 +68,13 @@
 			<option value="commune">Commune</option>
 		</select>
 
-		<div id="addInputs" class="d-flex flex-wrap">
-			<div class="mb-3 me-2">
-				<label class="form-label">Kilometrage de départ</label>
-				<input type="text" id="add_kilometrage_depart">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Heure de départ</label>
-				<input type="text" id="add_heure_depart">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Heure de rendu</label>
-				<input type="text" id="add_heure_rendu">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Id d'ahdérent</label>
-				<input type="text" id="add_id_adherent">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Id de station</label>
-				<input type="text" id="add_id_station">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Id de vélo</label>
-				<input type="text" id="add_id_velo">
-			</div>
+		<div id="addInputsContainer" class="d-flex flex-wrap">
 		</div>
 		<button onclick="add()">Ajouter</button>
+	</div>
+
+	<div id="champ">
+
 	</div>
 
 	<script>
@@ -109,143 +84,14 @@
 		$(document).ready(function () {
 			table = $('#tableGetResults').DataTable();
 			getApi('adherent');
+
+			addInputs($("#addInputsContainer"), $('#baseSelect').val());
 			document.getElementById("baseSelect").addEventListener("change", baseSelectUpdater);
 		});
 
 		// ##### POST #####
 		function baseSelectUpdater() {
-
-			$('#addInputs').empty();
-
-			// TODO : fix inputs types
-			switch ($('#baseSelect').val()) {
-				case "emprunt":
-					$('#addInputs').append(`
-			<div class="mb-3 me-2">
-				<label class="form-label">Kilometrage de départ</label>
-				<input type="text" id="add_kilometrage_depart">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Heure de départ</label>
-				<input type="text" id="add_heure_depart">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Heure de rendu</label>
-				<input type="text" id="add_heure_rendu">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Id d'ahdérent</label>
-				<input type="text" id="add_id_adherent">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Id de station</label>
-				<input type="text" id="add_id_station">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Id de vélo</label>
-				<input type="text" id="add_id_velo">
-			</div>`);
-					break;
-
-				case "velo":
-					$('#addInputs').append(`
-			<div class="mb-3 me-2">
-				<label class="form-label">Marque</label>
-				<input type="text" id="add_marque">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Date mise en service</label>
-				<input type="text" id="add_edate_mise_en_service">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Kilometrage</label>
-				<input type="text" id="add_kilometrage">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">État</label>
-				<input type="text" id="add_etat">
-			</div>
-			<div class="mb-3 me-2">
-				<label class="form-label">Niveau de batterie</label>
-				<input type="text" id="add_niveau_batterie">
-			</div>
-			<div class="mb-3 me-2">
-				<label class="form-label">Id de station</label>
-				<input type="text" id="add_id_station">
-			</div>
-		`);
-					break;
-
-				case "station":
-					$('#addInputs').append(`
-			<div class="mb-3 me-2">
-				<label class="form-label">Adresse</label>
-				<input type="text" id="add_adresse">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Commune</label>
-				<input type="text" id="add_commune">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Nombre de bornes</label>
-				<input type="text" id="add_nb_bornes">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Bornes disponibles</label>
-				<input type="text" id="add_nb_bornes_dispo">
-			</div>`);
-					break;
-
-				case "adherent":
-					$('#addInputs').append(`
-			<div class="mb-3 me-2">
-				<label class="form-label">Nom</label>
-				<input type="text" id="add_nom">
-			</div>
-			
-			<div class="mb-3 me-2">
-				<label class="form-label">Adresse</label>
-				<input type="text" id="add_adresse">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Commune</label>
-				<input type="text" id="add_commune">
-			</div>
-
-			<div class="mb-3 me-2">
-				<label class="form-label">Date d'adhesion</label>
-				<input type="text" id="add_date_adhesion">
-			</div>`);
-					break;
-				case "etat":
-					$('#addInputs').append(`
-			<div class="mb-3 me-2">
-				<label class="form-label">Description</label>
-				<input type="text" id="add_description">
-			</div>`);
-					break;
-
-				case "commune":
-					$('#addInputs').append(`
-			<div class="mb-3 me-2">
-				<label class="form-label">Nom de la commune</label>
-				<input type="text" id="add_nom_commune">
-			</div>`);
-					break;
-
-			}
+			addInputs($("#addInputsContainer"), $('#baseSelect').val());
 		}
 
 		function add() {
@@ -311,27 +157,18 @@
 		}
 
 		function postApi(data, table, action) {
-
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.onreadystatechange = function () {
-				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-					console.log(xmlHttp.response);
-				}
-			}
-			xmlHttp.open("POST", "/api/" + table + "/" + action, true);
-			xmlHttp.setRequestHeader('Content-Type', 'application/json');
-			xmlHttp.send(data);
+			requestAPI("POST", table + "/" + action, console.log, data)
 		}
 
 		// ##### GET #####
-		let getTable;
+		let tableDisplayed;
 
 		$(document).ready(function () {
 		});
 
 		function getApi(api) {
-			getTable = api;
-			sendRequest("/api/" + getTable, "GET", displayApi);
+			tableDisplayed = api;
+			requestAPI("GET", tableDisplayed, displayApi);
 		}
 
 		function displayApi(result) {
@@ -350,24 +187,17 @@
 			$("#apiResultHead").append('<th scope="col">Actions</th>');
 		}
 
-		function deleteApi(table, key, value) {
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.onreadystatechange = function () {
-				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-					console.log(xmlHttp.response);
-				}
-			}
-			xmlHttp.open("DELETE", "/api/" + table + "/" + key + "/" + value, true);
-			xmlHttp.setRequestHeader('Content-Type', 'application/json');
-			xmlHttp.send();
+		function deleteAPI(table, key, value) {
+			requestAPI("DELETE", table + "/" + key + "/" + value, console.log);
 		}
 
+		// check if id column can be set (used for add and coherence)
 		function removeRow(element) {
 			data = table.row($(element).parents('tr')).data();
 			let key;
 			let value;
 
-			switch (getTable) {
+			switch (tableDisplayed) {
 				case "adherent":
 					key = "ID_ADHERENT";
 					value = data[4];
@@ -389,7 +219,7 @@
 					value = data[6];
 					break;
 			}
-			deleteApi(getTable, key, value);
+			deleteAPI(tableDisplayed, key, value);
 			table.row($(element).parents('tr')).remove().draw();
 		}
 
@@ -398,12 +228,12 @@
 
 			let columnsNames = $("#apiResultHead").children();
 
-			for (let i = 0; i < columnsNames.length -1; ++i) {
-				
-				$("#editionContainer").append( $(columnsNames[i]).text());
+			for (let i = 0; i < columnsNames.length - 1; ++i) {
+
+				$("#editionContainer").append($(columnsNames[i]).text());
 
 			}
-			
+
 
 		}
 
@@ -429,28 +259,48 @@
 			}
 		}
 
-		function sendRequest(url, method, callback) {
-			var xmlHttp = new XMLHttpRequest();
-			xmlHttp.onreadystatechange = function () {
-				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-					callback(JSON.parse(xmlHttp.response));
+		function addInputs(container, base) {
+
+			container.empty();
+
+			requestAPI("GET", base + "/columns", (data) => {
+				for (row of data) {
+					container.append(`
+						<div class="mb-3 me-2">
+							<label class="form-label">` + row.Field + `</label>
+							<input type="text" id="add_` + row.Field + `">
+						</div>`);
 				}
-			}
-			xmlHttp.open(method, url, true);
-			xmlHttp.send();
+			});
 		}
 
 
-		function send() {
+		// Utils
+
+		function requestAPI(method, api, callback, data) {
 			var xmlHttp = new XMLHttpRequest();
 			xmlHttp.onreadystatechange = function () {
 				if (xmlHttp.readyState == 4 && xmlHttp.status == 200) {
-					console.log(xmlHttp.response);
+					if (isJSON(xmlHttp.response)) {
+						callback(JSON.parse(xmlHttp.response));
+					} else {
+						callback(xmlHttp.response);
+					}
 				}
 			}
-			xmlHttp.open("GET", "/api", true);
-			xmlHttp.send();
+			xmlHttp.open(method, "/api/" + api, true);
+			xmlHttp.send(data);
 		}
+
+		function isJSON(text) {
+			try {
+				JSON.parse(text);
+			} catch (e) {
+				return false;
+			}
+			return true;
+		}
+
 	</script>
 </body>
 
