@@ -14,6 +14,16 @@
 \usepackage{tikz}
 \usepackage{color}
 
+\lstset{
+  language=Java,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  numbers=left,
+  basicstyle = \small \ttfamily,
+  frame=single
+}
+
 \begin{document}
 % Mise en place de la page de garde.
   \begin{titlepage}
@@ -26,7 +36,7 @@
       \rule{\linewidth}{0.5 mm}\\[0.4 cm] {\Huge \bfseries Gestion d'une flotte de vélos électriques\\[0.2 cm]} \rule{\linewidth}{0.5 mm}\\[1.5 cm] {\Large
       Hugo \bsc{Langlais} \quad Antoine \bsc{Gaudy} \quad Guillaume \bsc{Fornes} \\[0.5 cm]}
 
-      {\large Encadré par Sylvain \bsc{Lombardy}}\\ \vfill
+      {\large Encadré par S. \bsc{Lombardy} et S. \bsc{Mosbah}}\\ \vfill
       \includegraphics[scale=0.4]{img/logo.em-bxinp} \vfill
       {\large Semestre 7 - 2021}
     \end{center}
@@ -36,6 +46,12 @@
   \newpage
 
   \section{Introduction}\label{sec:intro}
+  Ce rapport présente notre travail et avancement au cours du projet de SGBD proposé dans le cadre du cours d'IT204.
+  Il s'agit de mettre en \oe uvre les notions et méthodes étudiées dans ce module, par la mise en place en partant de zéro d'une
+  base de donnée cohérente(consultations, mises à jour, etc\dots) répondant à un problème, en passant par la modélisation
+  des données, la gestion des dépendances\dots
+  Ce projet a été réalisé en trinôme, par Hugo Langlais, Antoine Gaudy et Guillaume Fornes.\\
+
   \section{Modélisation des données}\label{sec:modelisation}
   Afin d'élaborer un système de gestion base de données permettant de répondre au problème, nous devons dans un premier temps
   comprendre les besoins du client afin de modéliser par la suite un modèle entité association de la base que nous souhaitons créer.\\
@@ -63,19 +79,55 @@
   la moyenne des distances parcourues par les vélos par semaine, le classement des stations par nombre de places disponibles pour
   une commune, et enfin le classement des vélos par charges de batterie pour une station donnée.\\
 
-  Hormis la consultation d'informations générales sur certaines entités, La majorité de ces requêtes concerne les emprunts effectués.
-  Ainsi la position de l'entité des emprunts se dessine comme centrale dans la base de donnée
+  Afin de modéliser les différents objets de notre système, nous allons créer les entités \texttt{VELO}, \texttt{STATION} et
+  \texttt{ADHERENT} contenant les attributs nécessaires recherchés par les requêtes de consultation.
+  Hormis cette consultation d'informations générales sur certaines entités, La majorité de ces requêtes concerne les emprunts effectués.
+  Ainsi nous allons considérer l'entité \texttt{EMPRUNT}  dont la position se dessine comme centrale dans la base de donnée.
+  De plus pour éviter une redondance, une entité \texttt{COMMUNE} devra être créer pour être liée avec les stations et les adhérents.
+  Enfin nous avons choisi de créer une table \texttt{ETAT} associée à \texttt{VELO} afin de définir une liste possible d'états
+  pour éviter encore une fois une répétition.\\
+
+  Concentrons-nous maintenant sur les associations de notre modèle. L'entité \texttt{emprunt}, centrée dans notre base, a donc nécessairement
+  des associations de cardinalité 1, n avec \texttt{VELO}, \texttt{ADHERENT} et \texttt{STATION} (de départ), qui sont les entités concernant et définissant
+  un emprunt.
+  On retrouvera aussi une association 1, n entre \texttt{VELO} et \texttt{STATION}, pour exprimer le stockage de ce premier.
+  Enfin une association 1, 1 \textit{distance} relie l'entité \texttt{STATION} à elle-même pour définir la distance séparant
+  2 station.\\
+
   \begin{figure}[!h]
+    \centering
     \includegraphics[scale=0.5]{img/entite_association}
     \caption{Schéma entité-association}
-    \label{entite}
+    \label{fig:entite}
   \end{figure}
-  \section{Schéma relationnel}\label{sec:relationel}
-  \subsection{Schéma en 3e forme normale}\label{subsec:normal}
 
-  \subsection{Contraintes et dépendances}\label{subsec:contrainte}
+  \subsection{Schéma relationnel}\label{sec:relationel}
+
+  Dans notre modèle entité association, on retrouve premièrement des associations 1, n.
+  Dans ce cas la, la traduction au modèle relationnel se fait en définissant comme clé étrangère, pour l'entité de côté 1,
+  la clé primaire de l'entité de côté n.
+  Le deuxième cas que l'on retrouve est celui de la relation de cardinalité 1, 1 qu'est \textit{Distance} entre deux entité \texttt{STATION}.
+  Celle-ci se retrouvera donc comme une table dans le modèle relationnel avec comme clé primaire les 2 clés étrangères des
+  deux stations.
+  Nous avons donc finalement le modèle relationnel suivant :\\
+  \begin{itemize}
+    \item ADHERENT (\underline{ID adherent}, nom, prénom, adresse, date d'adhésion, #ID commune (non nul));
+    \item COMMUNE (\underline{ID commune}, nom);
+    \item STATION (\underline{ID station}, adresse, nb bornes, nb bornes dispo, #ID commune (non nul));
+    \item DISTANCE (\underline{#ID station1 (non nul), #ID station2 (non nul)}, distance);
+    \item VELO (\underline{ID vélo}, marque, date mise en service, kilométrage, niveau de batterie, #ID station, #ID état (non nul));
+    \item ETAT (\underline{ID_état}, description);
+    \item EMPRUNT (\underline{ID emprunt}, km départ, heure)
+  \end{itemize}
+  \begin{figure}[!h]
+    \centering
+    \includegraphics[scale=0.5]{img/schema_relationel}
+    \caption{Schéma relationnel de la base}
+    \label{fig:relat}
+  \end{figure}
 
   \section{Implémentation}\label{sec:implementation}
+  Maintenant que nous disposons de notre schéma relationel en 3\ieme{} forme,
   \subsection{Création et remplissage de la base de donnée}\label{subsec:crea}
   \subsubsection{Les tables}
   \subsubsection{Les Triggers}
@@ -86,8 +138,8 @@
   \subsubsection{Les statistiques}
   
   \section{Utilisation}\label{sec:utili}
-  \subsubsection{Description du \textit{front}}\label{subsec:desc}
-  \subsubsection{Possibilité et utilisations}\label{subsec:possib}
+  \subsection{Description du \textit{front}}\label{subsec:desc}
+  \subsection{Possibilité et utilisations}\label{subsec:possib}
 
   \section{Conclusion}\label{sec:ccl}
 \end{document}
