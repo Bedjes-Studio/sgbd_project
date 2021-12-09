@@ -6,13 +6,16 @@
 
 # Installation des dépendances :
 ```bash
+# depuis le dossier /front
 $ npm install
 ```
 
 # Créations de la base de données
 
 ```bash
+# depuis le dossier racine
 $ mariadb
+# Créez la base de données souhaitée, puis exécutez le fichier make.sql
 $ source make.sql
 ```
 
@@ -21,13 +24,14 @@ $ source make.sql
 # Lancement du serveur : 
 
 ```bash
-$ cd ./front
+# depuis le dossier /front
 $ npm run build
 ```
 
 *Ou préférez watch pour un relancement automatique du serveur en cas d'erreur ou de modification des sources*
 
 ```bash
+# depuis le dossier /front
 $ npm run watch
 ```
 
@@ -44,3 +48,5 @@ mariadb.createPool({
     database: "projet"
 });
 ```
+
+Veillez mettre à jours les informations d'accès à la base en fonction de votre configuration.
