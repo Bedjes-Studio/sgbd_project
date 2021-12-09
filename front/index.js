@@ -46,6 +46,71 @@ app.get('/api/:table/columns', async (req, res) => {
     }
 });
 
+// IMPLEMENTS URLS
+app.get('/api/stats/users', async (req, res) => {
+    try {
+        const result = await db.pool.query("select call stat_adherent_par_velo()");
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+
+app.get('/api/stats/distance', async (req, res) => {
+    try {
+        const result = await db.pool.query("select distance_velo_derniere_semaine()");
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+
+app.get('/api/stats/totaldistance', async (req, res) => {
+    try {
+        // classement des vélos les plus chargés par station
+        const result = await db.pool.query(`SELECT MIN(KILOMETRAGE_DEPART), KILOMETRAGE FROM (
+                                                SELECT KILOMETRAGE_DEPART, ID_VELO FROM EMPRUNT
+                                            ) NATURAL JOIN VELO WHERE ID_VELO=2;`);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+
+app.get('/api/stats/stations', async (req, res) => {
+    try {
+        // classement des stations par nombre de bornes disponnibles par commune
+        const result = await db.pool.query(`SELECT ADRESSE, NB_BORNES_DISPO, NOM_COMMUNE 
+                                            FROM STATION 
+                                            JOIN COMMUNE ON COMMUNE=ID_COMMUNE 
+                                            ORDER BY NB_BORNES_DISPO, COMMUNE DESC;`);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
+app.get('/api/stats/charge', async (req, res) => {
+    try {
+        // classement des vélos les plus chargés par station
+        const result = await db.pool.query(`SELECT ID_VELO, MARQUE, NIVEAU_BATTERIE, ADRESSE 
+                                            FROM VELO 
+                                            NATURAL JOIN STATION
+                                            ORDER BY ADRESSE, NIVEAU_BATTERIE;`);
+        res.setHeader('Content-Type', 'application/json');
+        res.json(result);
+    } catch (err) {
+        throw err;
+    }
+});
+
 // ##### API ADD #####
 function parseData(data) {
     let values = "(";

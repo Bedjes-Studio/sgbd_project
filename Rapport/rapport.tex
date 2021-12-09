@@ -138,13 +138,31 @@
   \subsubsection{Les statistiques}
   
   \section{Utilisation}\label{sec:utili}
-  \subsection{Description du \textit{front}}\label{subsec:desc}
-  Le projet est basé sur 2 serveurs :
-  1 serveur MariaDB qui gère la base
-  1 serveur NodeJS pour la partie frontend
-  Nous a
+  
+  Une fois nos bases de données implémentées, nous pouvions les manipuler depuis le terminal. Celle-ci étant peu ergonomique, nous avons décidé de développer une interface web.
+  
+  \subsection{Description de l'interface utilisateur}\label{subsec:desc}
+  
+  Le projet est basé sur 2 serveurs. Le premier est un serveur MariaDB, il s'occupe de gérer la base. Le deuxième est un serveur NodeJS qui fournit l'interface graphique du projet. \\
+ 
+  Nous avons construit le serveur Node afin qu'il mettre à disposition des API pour la page principale. Pour cela, nous avons utilisé le module express. Ce dernier permet de gérer très facilement le rootage, en utilisant des expressions régulières notamment, et de répondre différemment suivant la méthode de requête utilisée. C'est le serveur NodeJS qui s'occupe d'envoyer les requêtes au serveur MariaDB.
+  Pour le rendu, nous avons utilisé Jquery et Bootstrap, afin de manipuler plus efficacement le DOM et de désigner rapidement l'interface. Pour l'affichage des tables, le plug-in Datatables s'est montré particulièrement efficace. \\
+  
+  La procédure d'installation ainsi que les dépendances du projet sont détaillées dans le fichier \mbox{\textit{/front/README.md}}.
+  
   \subsection{Possibilité et utilisations}\label{subsec:possib}
-  \subsubsection{Possibilité et utilisations}\label{subsec:possib}
+  
+La page principale est découpée en 4 sections :
+  \begin{itemize}
+  \item Une section d'affichage du contenu d'une table, avec des boutons d'édition et de suppression
+  \item Une fenêtre d'édition qui souvre après sélection d'une ligne
+  \item Une section d'affichage des statistiques du projet
+  \item Un formulaire pour insérer des éléments dans la table sélectionnée \\
+\end{itemize}
+
+L'ensemble des tables peut être affiché et modifié (sauf la table \textit{distance}), ainsi que leurs champs, excepté leurs clés primaires. Nous avons décidé de ne pas pouvoir modifier la table distance afin de garder la cohérence de celle-ci. Pour l'affichage des statistiques, nous avons implémenté les indicateurs précisés dans le sujet.
+
+Pour l'insertion d'éléments dans la base, nous avons ajouté au formulaire uniquement les champs strictement nécessaires. Le calcul des clés primaires, la création et le rendu d'un emprunt se font via des procédures. Nous avons par exemple uniquement besoin de l'id de l'adhérent et du vélo utilisé pour créer un emprunt, le reste des champs est calculé automatiquement.
 
   \section{Conclusion}\label{sec:ccl}
 \end{document}
