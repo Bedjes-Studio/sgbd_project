@@ -64,11 +64,9 @@
 			<option value="EMPRUNT">Emprunt</option>
 			<option value="RENDU">Rendu</option>
 			<option value="VELO">Vélo</option>
-			<option value="STATION">Station</option>
 			<option value="ADHERENT">Adherent</option>
 			<option value="etat">Etat</option>
 			<option value="COMMUNE">Commune</option>
-			<option value="DISTANCE">Distance</option>
 		</select>
 
 		<div id="addInputsContainer" class="d-flex flex-wrap">
@@ -93,6 +91,7 @@
 									</div>`
 			}]
 		}
+		let editedData;
 
 		$(document).ready(function () {
 			dataTable = $('#tableGetResults').DataTable();
@@ -149,18 +148,36 @@
 				dataTable.row.add(data).draw();
 			}
 		}
-
 		function editRow(element, data) {
-			addInputs($("#editionContainer"), tableDisplayed, data);
+			createEditInputs($("#editionContainer"), tableDisplayed, data);
+			editedData = data;
+		}
+
+		function editAPI() {
+			let json = {};
+			let { key, value } = getKey(tableDisplayed, editedData);
+
+			requestAPI("GET", tableDisplayed + "/columns", (data) => {
+				for (let i = 0; i < data.length - 1; ++i) {
+					json[data[i].Field] = $("#edit_" + data[i].Field).val()
+				}
+				requestAPI("PUT", tableDisplayed + "/" + key + "/" + value, console.log, JSON.stringify(json));
+			});
 		}
 
 		// TODO : check if id column can be set (used for add and coherence)
 		function removeRow(element) {
 			data = dataTable.row($(element).parents('tr')).data();
+			let { key, value } = getKey(tableDisplayed, data);
+
+			deleteAPI(tableDisplayed, key, value, element);
+		}
+
+		function getKey(table, data) {
 			let key;
 			let value;
 
-			switch (tableDisplayed) {
+			switch (table) {
 				case "ADHERENT":
 					key = "ID_ADHERENT";
 					value = data[4];
@@ -181,17 +198,15 @@
 					key = "ID_VELO";
 					value = data[6];
 					break;
-				case "VELO":
-					key = "ID_VELO";
-					value = data[6];
-					break;
 			}
-			deleteAPI(tableDisplayed, key, value);
-			dataTable.row($(element).parents('tr')).remove().draw();
+			return { key, value };
 		}
 
-		function deleteAPI(table, key, value) {
-			requestAPI("DELETE", table + "/" + key + "/" + value, console.log);
+		function deleteAPI(table, key, value, element) {
+			requestAPI("DELETE", table + "/" + key + "/" + value, (result) => {
+				console.log(result);
+				dataTable.row($(element).parents('tr')).remove().draw();
+			});
 		}
 
 		// ##### ADD #####
@@ -225,23 +240,8 @@
 														</div>`);
 					break;
 
-				case "DISTANCE":
-					$("#addInputsContainer").append(`<div class="mb-3 me-2">
-																<label class="form-label">ID_STATION_1</label>
-																<input type="text" id="add_ID_STATION_1">
-															</div>
-															<div class="mb-3 me-2">
-																<label class="form-label">ID_STATION_2</label>
-																<input type="text" id="add_ID_STATION_2">
-															</div>
-															<div class="mb-3 me-2">
-																<label class="form-label">DISTANCE</label>
-																<input type="text" id="add_DISTANCE">
-															</div>`);
-					break;
-
 				default:
-					addInputs($("#addInputsContainer"), table);
+					createAddInputs($("#addInputsContainer"), table);
 			}
 		}
 
@@ -259,13 +259,6 @@
 				case "RENDU":
 					json["ID_STATION"] = $("#add_ID_STATION").val()
 					json["ID_VELO"] = $("#add_ID_VELO").val()
-					requestAPI("POST", table + "/add", console.log, JSON.stringify(json))
-					break;
-
-				case "DISTANCE":
-					json["ID_STATION_1"] = $("#add_ID_STATION_1").val()
-					json["ID_STATION_2"] = $("#add_ID_STATION_2").val()
-					json["DISTANCE"] = $("#add_DISTANCE").val()
 					requestAPI("POST", table + "/add", console.log, JSON.stringify(json))
 					break;
 
@@ -306,31 +299,34 @@
 			return true;
 		}
 
-		function addInputs(container, base, values=[]) {
+		function createAddInputs(container, base) {
 
 			container.empty();
 
-			if (values.length == 0) {
-
-				requestAPI("GET", base + "/columns", (data) => {
-					for (let i = 0; i < data.length - 1; ++i) {
-						container.append(`<div class="mb-3 me-2">
+			requestAPI("GET", base + "/columns", (data) => {
+				for (let i = 0; i < data.length - 1; ++i) {
+					container.append(`<div class="mb-3 me-2">
 										<label class="form-label">` + data[i].Field + `</label>
 										<input type="text" id="add_` + data[i].Field + `">
 									</div>`);
-					}
-				});
-			} else {
-				requestAPI("GET", base + "/columns", (data) => {
-					for (let i = 0; i < data.length - 1; ++i) {
-						container.append(`<div class="mb-3 me-2">
-										<label class="form-label">` + data[i].Field + `</label>
-										<input type="text" id="add_` + data[i].Field + `" value="` + values[i] + `">
-									</div>`);
-					}
-				});
-			}
+				}
+			});
 		}
+
+		function createEditInputs(container, base, values) {
+
+			container.empty();
+			requestAPI("GET", base + "/columns", (data) => {
+				for (let i = 0; i < data.length - 1; ++i) {
+					container.append(`<div class="mb-3 me-2">
+										<label class="form-label">` + data[i].Field + `</label>
+										<input type="text" id="edit_` + data[i].Field + `" value="` + values[i] + `">
+									</div>`);
+				}
+				$("#editionContainer").append(`<button onclick="editAPI()">Editer</button>`);
+			});
+		}
+
 
 	</script>
 </body>

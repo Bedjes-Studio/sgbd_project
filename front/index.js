@@ -94,9 +94,6 @@ app.post('/api/:table/add', async (req, res) => {
 // ##### API DELETE #####
 app.delete('/api/:table/:key/:value', async (req, res) => {
     try {
-        let { columns, values } = parseData(req.body);
-        console.log(columns);
-        console.log(values);
         await db.pool.query("delete from " + req.params.table + " where " + req.params.key + "=" + req.params.value);
         res.send("Table updated.");
     } catch (err) {
@@ -106,10 +103,18 @@ app.delete('/api/:table/:key/:value', async (req, res) => {
 });
 
 // ##### API PUT (update) #####
+//UPDATE t1 SET c1=c1+1 WHERE c2=(SELECT MAX(c2) FROM t1);
 
-// TODO : implements this api
-app.put('/', async (req, res) => {
-
+app.put('/api/:table/:key/:value', async (req, res) => {
+    try {
+        for (let key in req.body) {
+            await db.pool.query("update " + req.params.table + " set " + key + "= \"" + req.body[key] + "\" where " + req.params.key + "=" + req.params.value);
+        }
+        res.send("Table updated.");
+    } catch (err) {
+        res.send("Table not updated : \n" + err);
+        throw err;
+    }
 });
 
 // 404 

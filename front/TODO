@@ -1,9 +1,15 @@
-Faire le front
-
 attention config db.js
-modif tous les noms en majuscule
+
 bouton modifier
-if dans get distance
-afficher etat à la place de id dans la table velo
-ajouter une création de base dans le make
+
+type des champs
 bouton rendre emprunt
+
+
+pas de remove pour les distances
+pas de modif distances
+
+
+ajouter une création de base dans le make
+afficher etat à la place de id dans la table velo
+
