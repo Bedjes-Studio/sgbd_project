@@ -46,7 +46,6 @@ app.get('/api/:table/columns', async (req, res) => {
     }
 });
 
-// IMPLEMENTS URLS
 app.get('/api/stats/users', async (req, res) => {
     try {
         const result = await db.pool.query("select call stat_adherent_par_velo()");

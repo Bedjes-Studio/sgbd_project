@@ -1,15 +1,8 @@
+ajouter une création de base dans le make
 attention config db.js
-
-bouton modifier
+readme
 
 type des champs
-bouton rendre emprunt
-
-
-pas de remove pour les distances
-pas de modif distances
-
-
-ajouter une création de base dans le make
-afficher etat à la place de id dans la table velo
+stats
+getters
 

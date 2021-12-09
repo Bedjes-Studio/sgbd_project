@@ -162,7 +162,7 @@ La page principale est découpée en 4 sections :
 
 L'ensemble des tables peut être affiché et modifié (sauf la table \textit{distance}), ainsi que leurs champs, excepté leurs clés primaires. Nous avons décidé de ne pas pouvoir modifier la table distance afin de garder la cohérence de celle-ci. Pour l'affichage des statistiques, nous avons implémenté les indicateurs précisés dans le sujet.
 
-Pour l'insertion d'éléments dans la base, nous avons ajouté au formulaire uniquement les champs strictement nécessaires. Le calcul des clés primaires, la création et le rendu d'un emprunt se font via des procédures. Nous avons par exemple uniquement besoin de l'id de l'adhérent et du vélo utilisé pour créer un emprunt, le reste des champs est calculé automatiquement.
+Pour l'insertion d'éléments dans la base, nous avons ajouté au formulaire uniquement les champs strictement nécessaires. Le calcul des clés primaires, la création et le rendu d'un emprunt se font via des procédures. Nous avons par exemple uniquement besoin de l'id de l'adhérent et du vélo utilisé pour créer un emprunt, le reste des champs est calculé automatiquement. Notons qu'il n'y a aucune vérification du les informations saisies, le projet est donc vulnérable aux injections SQL.
 
   \section{Conclusion}\label{sec:ccl}
 \end{document}
