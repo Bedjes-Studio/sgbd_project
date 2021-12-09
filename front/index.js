@@ -15,7 +15,7 @@ app.get('/', async (req, res) => {
 // API LIST
 app.get('/api', async (req, res) => {
     try {
-        const result = await db.pool.query("call creation_emprunt(1,1)");
+        const result = await db.pool.query("DELETE FROM adherent WHERE id_adherent=11");
         res.send(result);
     } catch (err) {
         throw err;
@@ -36,7 +36,7 @@ app.get('/api/:table', async (req, res) => {
     }
 });
 
-// ##### API POST #####
+// ##### API ADD #####
 function parseData(data) {
     let values = "(";
     let columns = "(";
@@ -66,17 +66,24 @@ app.post('/api/:table/add', async (req, res) => {
     }
 });
 
+// ##### API DELETE #####
+app.delete('/api/:table/:key/:value', async (req, res) => {
+    try {
+        let { columns, values } = parseData(req.body);
+        console.log(columns);
+        console.log(values);
+        await db.pool.query("delete from " + req.params.table + " where " + req.params.key + "=" + req.params.value);
+        res.send("Table updated.");
+    } catch (err) {
+        res.send("Table not updated : \n" + err);
+        throw err;
+    }
+});
+
 // ##### API PUT (update) #####
 
 // TODO : implements this api
 app.put('/', async (req, res) => {
-
-});
-
-// ##### API DELETE #####
-
-// TODO : implements this api
-app.delete('/', async (req, res) => {
 
 });
 
