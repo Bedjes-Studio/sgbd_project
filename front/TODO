@@ -7,7 +7,3 @@ if dans get distance
 afficher etat à la place de id dans la table velo
 ajouter une création de base dans le make
 bouton rendre emprunt
-
-ajouter emprunt : check procédure
-
-https://stackoverflow.com/questions/107390/whats-the-difference-between-a-post-and-a-put-http-request

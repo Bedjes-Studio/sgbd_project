@@ -20,16 +20,17 @@
 	<div>
 		<h1>Getter</h1>
 
-		<div id="editionContainer">
-
+		<div id="editionContainer" class="d-flex flex-wrap">
 		</div>
 
 		<div class="mb-3">
-			<button onclick="displayAPI('adherent')">Adherent</button>
-			<button onclick="displayAPI('commune')">Communes</button>
-			<button onclick="displayAPI('emprunt')">Emprunt</button>
-			<button onclick="displayAPI('station')">Station</button>
-			<button onclick="displayAPI('velo')">Velo</button>
+			<button onclick="displayAPI('ADHERENT')">Adherent</button>
+			<button onclick="displayAPI('COMMUNE')">Communes</button>
+			<button onclick="displayAPI('EMPRUNT')">Emprunt</button>
+			<button onclick="displayAPI('STATION')">Station</button>
+			<button onclick="displayAPI('VELO')">Velo</button>
+			<button onclick="displayAPI('DISTANCE')">Distance</button>
+
 			<button onclick="send()">Test procedure</button>
 		</div>
 
@@ -60,17 +61,19 @@
 
 
 		<select id="baseSelect" class="mb-3">
-			<option value="emprunt">Emprunt</option>
-			<option value="velo">Vélo</option>
-			<option value="station">Station</option>
-			<option value="adherent">Adherent</option>
+			<option value="EMPRUNT">Emprunt</option>
+			<option value="RENDU">Rendu</option>
+			<option value="VELO">Vélo</option>
+			<option value="STATION">Station</option>
+			<option value="ADHERENT">Adherent</option>
 			<option value="etat">Etat</option>
-			<option value="commune">Commune</option>
+			<option value="COMMUNE">Commune</option>
+			<option value="DISTANCE">Distance</option>
 		</select>
 
 		<div id="addInputsContainer" class="d-flex flex-wrap">
 		</div>
-		<button onclick="add()">Ajouter</button>
+		<button onclick="addAPI()">Ajouter</button>
 	</div>
 
 	<div id="champ">
@@ -79,23 +82,23 @@
 
 	<script>
 
-		let table;
+		let dataTable;
 		datatableConfig = {
 			"columnDefs": [{
 				"targets": -1,
 				"data": null,
 				"defaultContent": `<div class="d-flex">
-										<button onclick="editRow(this)">EDIT</button>
+										<button onclick="editRow(this,  dataTable.row($(this).parent().parent()).data())">EDIT</button>
 										<button onclick="removeRow(this);">REMOVE</button>
 									</div>`
 			}]
 		}
 
 		$(document).ready(function () {
-			table = $('#tableGetResults').DataTable();
-			displayAPI('adherent');
+			dataTable = $('#tableGetResults').DataTable();
+			displayAPI('ADHERENT');
 
-			addInputs($("#addInputsContainer"), $('#baseSelect').val());
+			baseSelectUpdater();
 			document.getElementById("baseSelect").addEventListener("change", baseSelectUpdater);
 		});
 
@@ -114,8 +117,13 @@
 		}
 
 		function insertHeader(result) {
-			table.destroy();
+			dataTable.destroy();
 			$("#apiResultHead").empty();
+
+			if (result.length == 0) {
+				$("#apiResultHead").append('<th scope="col">Cette table est vide : ' + tableDisplayed + '</th>');
+				return;
+			}
 
 			let keys = Object.keys(result[0]);
 			for (let key of keys) {
@@ -126,76 +134,152 @@
 
 		function insertBody(result) {
 			$("#apiResultBody").empty();
-			table = $('#tableGetResults').DataTable(datatableConfig);
+
+			dataTable = $('#tableGetResults').DataTable(datatableConfig);
+
+			if (result.length == 0) {
+				return;
+			}
 
 			for (let row of result) {
 				let data = []
 				for (let key in row) {
 					data.push(row[key]);
 				}
-				table.row.add(data).draw();
+				dataTable.row.add(data).draw();
 			}
 		}
 
-		function editRow(element) {
-			addInputs($("#editionContainer"), tableDisplayed);
+		function editRow(element, data) {
+			addInputs($("#editionContainer"), tableDisplayed, data);
 		}
 
 		// TODO : check if id column can be set (used for add and coherence)
 		function removeRow(element) {
-			data = table.row($(element).parents('tr')).data();
+			data = dataTable.row($(element).parents('tr')).data();
 			let key;
 			let value;
 
 			switch (tableDisplayed) {
-				case "adherent":
+				case "ADHERENT":
 					key = "ID_ADHERENT";
 					value = data[4];
 					break;
-				case "commune":
+				case "COMMUNE":
 					key = "ID_COMMUNE";
 					value = data[1];
 					break;
-				case "emprunt":
+				case "EMPRUNT":
 					key = "ID_EMPRUNT";
 					value = data[5];
 					break;
-				case "station":
+				case "STATION":
 					key = "ID_STATION";
 					value = data[4];
 					break;
-				case "velo":
+				case "VELO":
+					key = "ID_VELO";
+					value = data[6];
+					break;
+				case "VELO":
 					key = "ID_VELO";
 					value = data[6];
 					break;
 			}
 			deleteAPI(tableDisplayed, key, value);
-			table.row($(element).parents('tr')).remove().draw();
+			dataTable.row($(element).parents('tr')).remove().draw();
 		}
 
 		function deleteAPI(table, key, value) {
 			requestAPI("DELETE", table + "/" + key + "/" + value, console.log);
 		}
 
-		// ADD
+		// ##### ADD #####
 
 		function baseSelectUpdater() {
-			addInputs($("#addInputsContainer"), $('#baseSelect').val());
-		}
-
-		function add() {
 			let table = $('#baseSelect').val();
-			let json = {} ;
 
-			requestAPI("GET", table + "/columns", (data) => {
-				for (row of data) {
-					json[row.Field] = $("#add_" + row.Field).val()
-				}
-			});
-			requestAPI("POST", table + "/add", console.log, JSON.stringify(data))
+			// TODO add button
+
+			$("#addInputsContainer").empty();
+			switch (table) {
+				case "EMPRUNT":
+					$("#addInputsContainer").append(`<div class="mb-3 me-2">
+														<label class="form-label">ID_ADHERENT</label>
+														<input type="text" id="add_ID_ADHERENT">
+													</div>
+													<div class="mb-3 me-2">
+														<label class="form-label">ID_VELO</label>
+														<input type="text" id="add_ID_VELO">
+													</div>`);
+					break;
+
+				case "RENDU":
+					$("#addInputsContainer").append(`<div class="mb-3 me-2">
+															<label class="form-label">ID_STATION</label>
+															<input type="text" id="add_ID_STATION">
+														</div>
+														<div class="mb-3 me-2">
+															<label class="form-label">ID_VELO</label>
+															<input type="text" id="add_ID_VELO">
+														</div>`);
+					break;
+
+				case "DISTANCE":
+					$("#addInputsContainer").append(`<div class="mb-3 me-2">
+																<label class="form-label">ID_STATION_1</label>
+																<input type="text" id="add_ID_STATION_1">
+															</div>
+															<div class="mb-3 me-2">
+																<label class="form-label">ID_STATION_2</label>
+																<input type="text" id="add_ID_STATION_2">
+															</div>
+															<div class="mb-3 me-2">
+																<label class="form-label">DISTANCE</label>
+																<input type="text" id="add_DISTANCE">
+															</div>`);
+					break;
+
+				default:
+					addInputs($("#addInputsContainer"), table);
+			}
 		}
 
-		// Utils
+		function addAPI() {
+			let table = $('#baseSelect').val();
+			let json = {};
+
+			switch (table) {
+				case "EMPRUNT":
+					json["ID_ADHERENT"] = $("#add_ID_ADHERENT").val()
+					json["ID_VELO"] = $("#add_ID_VELO").val()
+					requestAPI("POST", table + "/add", console.log, JSON.stringify(json))
+					break;
+
+				case "RENDU":
+					json["ID_STATION"] = $("#add_ID_STATION").val()
+					json["ID_VELO"] = $("#add_ID_VELO").val()
+					requestAPI("POST", table + "/add", console.log, JSON.stringify(json))
+					break;
+
+				case "DISTANCE":
+					json["ID_STATION_1"] = $("#add_ID_STATION_1").val()
+					json["ID_STATION_2"] = $("#add_ID_STATION_2").val()
+					json["DISTANCE"] = $("#add_DISTANCE").val()
+					requestAPI("POST", table + "/add", console.log, JSON.stringify(json))
+					break;
+
+				default:
+					requestAPI("GET", table + "/columns", (data) => {
+						for (let i = 0; i < data.length - 1; ++i) {
+							json[data[i].Field] = $("#add_" + data[i].Field).val()
+						}
+						requestAPI("POST", table + "/add", console.log, JSON.stringify(json))
+					});
+			}
+		}
+
+		// ##### Utils #####
 
 		function requestAPI(method, api, callback, data) {
 			var xmlHttp = new XMLHttpRequest();
@@ -209,6 +293,7 @@
 				}
 			}
 			xmlHttp.open(method, "/api/" + api, true);
+			xmlHttp.setRequestHeader('Content-Type', 'application/json');
 			xmlHttp.send(data);
 		}
 
@@ -221,17 +306,30 @@
 			return true;
 		}
 
-		function addInputs(container, base) {
+		function addInputs(container, base, values=[]) {
 
 			container.empty();
-			requestAPI("GET", base + "/columns", (data) => {
-				for (row of data) {
-					container.append(`<div class="mb-3 me-2">
-										<label class="form-label">` + row.Field + `</label>
-										<input type="text" id="add_` + row.Field + `">
+
+			if (values.length == 0) {
+
+				requestAPI("GET", base + "/columns", (data) => {
+					for (let i = 0; i < data.length - 1; ++i) {
+						container.append(`<div class="mb-3 me-2">
+										<label class="form-label">` + data[i].Field + `</label>
+										<input type="text" id="add_` + data[i].Field + `">
 									</div>`);
-				}
-			});
+					}
+				});
+			} else {
+				requestAPI("GET", base + "/columns", (data) => {
+					for (let i = 0; i < data.length - 1; ++i) {
+						container.append(`<div class="mb-3 me-2">
+										<label class="form-label">` + data[i].Field + `</label>
+										<input type="text" id="add_` + data[i].Field + `" value="` + values[i] + `">
+									</div>`);
+					}
+				});
+			}
 		}
 
 	</script>

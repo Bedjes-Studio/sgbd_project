@@ -66,9 +66,24 @@ function parseData(data) {
 app.post('/api/:table/add', async (req, res) => {
     try {
         let { columns, values } = parseData(req.body);
-        console.log(columns);
-        console.log(values);
-        await db.pool.query("insert into " + req.params.table + " " + columns + " values " + values);
+
+        switch (req.params.table) {
+            case "EMPRUNT":
+                await db.pool.query("call creation_emprunt(" + req.body["ID_ADHERENT"] + "," + req.body["ID_VELO"] + ")");
+                break;
+
+            case "RENDU":
+                await db.pool.query("call rendu_emprunt(" + req.body["ID_STATION"] + "," + req.body["ID_VELO"] + ")");
+                break;
+
+            case "DISTANCE":
+                await db.pool.query("call distance_station(" + req.body["ID_STATION_1"] + "," + req.body["ID_STATION_2"] + "," + req.body["DISTANCE"] + ")");
+                break;
+
+            default:
+                await db.pool.query("insert into " + req.params.table + " " + columns + " values " + values);
+        }
+
         res.send("Table updated.");
     } catch (err) {
         res.send("Table not updated : \n" + err);
