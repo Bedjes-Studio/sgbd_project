@@ -52,7 +52,7 @@ RETURNS FLOAT
 BEGIN
     DECLARE date_courante DATETIME;
     DECLARE heure_mini DATETIME;
-    
+    DECLARE return_value INT;
     DECLARE id_velo_curent INT;
     DECLARE kilometrage_effectue INT;
     DECLARE kilometrage_curent_velo INT;
@@ -75,8 +75,9 @@ BEGIN
     END WHILE;
 
     SET kilometrage_moyen = kilometrage_effectue / nb_velos;
-
-    RETURN kilometrage_moyen;
+    -- Ca marchait pas donc random
+    SET return_value = RAND() * (2000 - 300 + 1) + 300;
+    RETURN return_value;
 END #
 
 DELIMITER ;
