@@ -394,7 +394,17 @@
 		}
 
 		function editRow(element) {
-			$("#editionContainer").append("ouiiii");
+			let data = table.row($(element).parents('tr')).data();
+
+			let columnsNames = $("#apiResultHead").children();
+
+			for (let i = 0; i < columnsNames.length -1; ++i) {
+				
+				$("#editionContainer").append( $(columnsNames[i]).text());
+
+			}
+			
+
 		}
 
 		function insertBody(result) {
